@@ -17,6 +17,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -35,10 +36,10 @@ jobs:
           echo "GITHUB_PAGES=true" >> $GITHUB_ENV
           npm run build
 
-      - name: Upload build artifacts
+      - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist   # 👈 now points to root-level build folder
+          path: ./dist   # 👈 upload the compiled site only
 
   deploy:
     environment:
