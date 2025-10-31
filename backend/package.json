@@ -7,9 +7,12 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
+    "seed": "node seed.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio"
+    "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:studio": "prisma studio",
+    "build": "npx prisma generate && npx prisma migrate deploy && node seed.js"
   },
   "keywords": ["cleaning", "booking", "api"],
   "author": "",
