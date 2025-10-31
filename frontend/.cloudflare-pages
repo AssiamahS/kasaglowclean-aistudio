@@ -1,0 +1,6 @@
+{
+  "projectName": "kasaglowclean",
+  "productionBranch": "main",
+  "buildCommand": "npm run build",
+  "buildOutputDirectory": "dist"
+}
