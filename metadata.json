@@ -1,0 +1,5 @@
+{
+  "name": "KasaGlowClean Booking Service v4",
+  "description": "A Calendly-like booking website for KasaGlowClean services. Users can select a service, pick an available date and time from a calendar, and fill out a form to confirm their booking.",
+  "requestFramePermissions": []
+}
