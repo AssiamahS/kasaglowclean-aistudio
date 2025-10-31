@@ -1,12 +1,12 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// Build configuration for GitHub Pages
 export default defineConfig({
   plugins: [react()],
-  base: '/kasaglowclean-aistudio/', // 👈 must match repo name exactly
+  base: './', // relative paths work anywhere (safe for GH Pages)
   build: {
     outDir: 'dist',
     sourcemap: true,
   },
 })
+
