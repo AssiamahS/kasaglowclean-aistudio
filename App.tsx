@@ -8,7 +8,7 @@ import ProgressBar from './components/ProgressBar';
 import Payment from './components/Payment';
 import AdminView from './components/AdminView';
 import Login from './components/Login';
-import { LogoIcon, UserShieldIcon, ArrowLeftOnRectangleIcon } from './components/IconComponents';
+import { UserShieldIcon, ArrowLeftOnRectangleIcon } from './components/IconComponents';
 
 const App: React.FC = () => {
   const [step, setStep] = useState(1);
@@ -96,28 +96,37 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-base-200 font-sans text-gray-800 flex flex-col items-center p-4 sm:p-6 lg:p-8">
-      <header className="w-full max-w-5xl mx-auto mb-6 text-center">
-         <div className="flex items-center justify-center gap-3 mb-2">
-            <LogoIcon className="h-10 w-10 text-primary" />
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-800">KasaGlowClean</h1>
+      <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-md shadow-sm">
+        <div className="w-full max-w-5xl mx-auto flex items-center justify-between gap-4 p-4">
+          <div className="flex items-center gap-4">
+            <img
+              src="/logo.PNG"
+              alt="Kasaglow logo"
+              className="h-16 sm:h-20 w-auto object-contain"
+            />
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">KasaGlowClean</h1>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <p className="hidden sm:block text-sm text-neutral">Your trusted partner for a spotless space.</p>
+            <button
+              onClick={toggleAdminView}
+              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-100 transition-colors"
+            >
+              {isAdminView ? (
+                <>
+                  <ArrowLeftOnRectangleIcon className="h-5 w-5" />
+                  <span>Exit Admin</span>
+                </>
+              ) : (
+                <>
+                  <UserShieldIcon className="h-5 w-5" />
+                  <span>Admin View</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
-        <p className="text-lg text-neutral mb-4">Your trusted partner for a spotless space.</p>
-        <button 
-          onClick={toggleAdminView}
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-100 transition-colors"
-        >
-          {isAdminView ? (
-            <>
-              <ArrowLeftOnRectangleIcon className="h-5 w-5"/>
-              <span>Exit Admin</span>
-            </>
-          ) : (
-            <>
-              <UserShieldIcon className="h-5 w-5"/>
-              <span>Admin View</span>
-            </>
-          )}
-        </button>
       </header>
 
       {isAdminView ? (
