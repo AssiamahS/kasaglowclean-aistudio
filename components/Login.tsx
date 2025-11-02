@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+// FIX: Import missing LockClosedIcon
 import { UserIcon, LockClosedIcon } from './IconComponents';
 
 interface LoginProps {
@@ -41,7 +42,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onCancel }) => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
-              placeholder="admin"
+              placeholder="Enter username"
             />
           </div>
         </div>
@@ -60,7 +61,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onCancel }) => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
-              placeholder="password123"
+              placeholder="Enter password"
             />
           </div>
         </div>

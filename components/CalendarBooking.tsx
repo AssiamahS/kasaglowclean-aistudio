@@ -1,8 +1,11 @@
 
+
 import React, { useState, useMemo } from 'react';
 import type { Service } from '../types';
 import { BUSINESS_HOURS, MOCKED_BOOKED_SLOTS } from '../constants';
-import { ClockIcon, PriceTagIcon, CalendarIcon } from './IconComponents';
+// FIX: Replaced CalendarIcon with CalendarDaysIcon and imported missing icons.
+// FIX: The missing icons 'ClockIcon' and 'PriceTagIcon' were added to IconComponents.tsx to resolve the import error.
+import { ClockIcon, PriceTagIcon, CalendarDaysIcon } from './IconComponents';
 
 interface CalendarBookingProps {
   service: Service;
@@ -86,7 +89,8 @@ const CalendarBooking: React.FC<CalendarBookingProps> = ({ service, onDateTimeSe
         
         <div className="lg:w-1/2 bg-white p-4 sm:p-6 rounded-lg shadow-md border border-base-200">
            <div className="border-b border-base-300 pb-4 mb-4">
-              <h3 className="text-lg font-bold text-gray-800">{service.name}</h3>
+              {/* FIX: Changed property 'name' to 'title' to match the 'Service' type definition. */}
+              <h3 className="text-lg font-bold text-gray-800">{service.title}</h3>
               <div className="flex items-center text-neutral text-sm mt-2">
                 <div className="flex items-center mr-4"><ClockIcon className="h-4 w-4 mr-1"/>{service.duration} mins</div>
                 <div className="flex items-center"><PriceTagIcon className="h-4 w-4 mr-1"/>${service.reservationFee} Reservation Fee</div>
@@ -134,7 +138,7 @@ const CalendarBooking: React.FC<CalendarBookingProps> = ({ service, onDateTimeSe
             </h3>
             {!selectedDate ? (
                 <div className="flex flex-col items-center justify-center h-64 text-neutral">
-                    <CalendarIcon className="h-12 w-12 mb-4" />
+                    <CalendarDaysIcon className="h-12 w-12 mb-4" />
                     <p>Please select a date from the calendar.</p>
                 </div>
             ) : (

@@ -1,62 +1,169 @@
+import type { Service, Feature, ProcessStep, Testimonial, FeatureSlide, Location } from './types';
+import {
+  SparklesIcon, HomeIcon, BuildingOfficeIcon, TruckIcon,
+  // FIX: Removed 'GiftIcon' as it is not exported from IconComponents.
+  ShieldCheckIcon, ThumbUpIcon, UsersIcon,
+  PhoneArrowUpRightIcon, CalendarDaysIcon, CheckBadgeIcon,
+  HeartIcon, LockClosedIcon, CheckCircleIcon, MapPinIcon
+} from './components/IconComponents';
 
-import type { Service } from './types';
+// FIX: Added BUSINESS_HOURS constant required by CalendarBooking component.
+export const BUSINESS_HOURS = {
+  start: 9, // 9 AM
+  end: 17, // 5 PM
+};
+
+// FIX: Added MOCKED_BOOKED_SLOTS constant required by CalendarBooking component.
+export const MOCKED_BOOKED_SLOTS = new Set<string>([
+  // Example: 'YYYY-MM-DD-HH'
+]);
 
 export const SERVICES: Service[] = [
   {
-    id: 1,
-    name: 'Standard House Cleaning',
-    description: 'A thorough cleaning of all standard living areas, kitchens, and bathrooms.',
-    duration: 120, // 2 hours
+    icon: HomeIcon,
+    title: 'Regular Cleaning',
+    description: 'Keep your home consistently clean with our scheduled cleaning services. Weekly, bi-weekly, or monthly options available.',
+    // FIX: Added 'duration' and 'reservationFee' to match the updated Service type.
+    duration: 120,
     reservationFee: 25,
   },
   {
-    id: 2,
-    name: 'Deep Cleaning',
-    description: 'An intensive, detailed cleaning perfect for spring cleaning or special occasions.',
-    duration: 240, // 4 hours
+    icon: SparklesIcon,
+    title: 'Deep Cleaning',
+    description: 'A comprehensive, top-to-bottom clean that leaves your home spotless. Perfect for spring cleaning or special occasions.',
+    // FIX: Added 'duration' and 'reservationFee' to match the updated Service type.
+    duration: 240,
     reservationFee: 50,
   },
   {
-    id: 3,
-    name: 'Office Cleaning',
-    description: 'Keep your workspace productive and professional with our tailored office cleaning services.',
-    duration: 180, // 3 hours
+    icon: TruckIcon,
+    title: 'Move In/Out Cleaning',
+    description: 'Ensure a smooth transition. We clean your old home for the next residents or your new home before you settle in.',
+    // FIX: Added 'duration' and 'reservationFee' to match the updated Service type.
+    duration: 180,
     reservationFee: 40,
   },
   {
-    id: 4,
-    name: 'Move-In/Move-Out Cleaning',
-    description: 'Ensure a spotless transition for your new or old home. Ready for inspection.',
-    duration: 300, // 5 hours
-    reservationFee: 60,
-  },
-  {
-    id: 5,
-    name: 'Apartment Cleaning',
-    description: 'Specialized cleaning for apartments and condos, focusing on maximizing smaller spaces.',
-    duration: 90, // 1.5 hours
-    reservationFee: 20,
-  },
-  {
-    id: 6,
-    name: 'Post-Construction Cleaning',
-    description: 'We handle the dust and debris after construction, leaving your new space immaculate.',
-    duration: 360, // 6 hours
-    reservationFee: 75,
+    icon: BuildingOfficeIcon,
+    title: 'Office Cleaning',
+    description: 'Maintain a clean, healthy, and productive workspace for your employees and clients with our professional office cleaning.',
+    // FIX: Added 'duration' and 'reservationFee' to match the updated Service type.
+    duration: 150,
+    reservationFee: 35,
   },
 ];
 
-export const BUSINESS_HOURS = {
-  start: 8, // 8 AM
-  end: 18, // 6 PM
-};
+export const FEATURE_SLIDES: FeatureSlide[] = [
+  {
+    image: 'https://images.unsplash.com/photo-1600585152915-d208bec867a1?q=80&w=1972&auto=format&fit=crop',
+    video: '/videos/deep-cleaning.mp4',
+    title: 'The KasaGlow Difference',
+    subtitle: 'Exceptional Quality, Every Time',
+    description: 'We are committed to providing a reliable, high-quality experience. Our professional team is dedicated to making your home a cleaner, healthier, and happier place.',
+    features: [
+      { icon: ShieldCheckIcon, text: 'Trusted & Fully Insured' },
+      { icon: ThumbUpIcon, text: '100% Satisfaction Guarantee' },
+      { icon: UsersIcon, text: 'Expertly Trained Professionals' },
+    ]
+  },
+  {
+    image: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=1974&auto=format&fit=crop',
+    video: '/videos/hero-home-cleaning.mp4',
+    title: 'We Love Your Furry Friends',
+    subtitle: 'Pet-Friendly Cleaning Services',
+    description: 'Our team uses pet-safe products and techniques to ensure a clean home that\'s also safe for your beloved companions. We pay special attention to pet hair and odors.',
+    features: [
+      { icon: HeartIcon, text: 'Non-Toxic, Pet-Safe Products' },
+      { icon: HomeIcon, text: 'Specialized in Pet Hair Removal' },
+      { icon: SparklesIcon, text: 'Odor Elimination Treatments' },
+    ]
+  },
+  {
+    image: 'https://images.unsplash.com/photo-1583501653320-27a0a283a553?q=80&w=2070&auto=format&fit=crop',
+    video: '/videos/garage-cleaning.mov',
+    title: 'Beyond the Living Room',
+    subtitle: 'Garage & Outdoor Area Cleaning',
+    description: 'Let us tackle the dirtiest parts of your home. We offer comprehensive garage cleaning and organization services to reclaim your space.',
+    features: [
+      { icon: CheckCircleIcon, text: 'De-cluttering & Organization' },
+      { icon: SparklesIcon, text: 'Pressure Washing Services' },
+      { icon: TruckIcon, text: 'Junk Hauling & Disposal' },
+    ]
+  },
+   {
+    image: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop',
+    video: '/videos/office-cleaning.mp4',
+    title: 'Professional Spaces, Impeccable Results',
+    subtitle: 'Corporate & Office Cleaning',
+    description: 'Impress clients and boost employee morale with a pristine work environment. We offer flexible contracts for businesses of all sizes.',
+    features: [
+      { icon: CalendarDaysIcon, text: 'Flexible Evening & Weekend Hours' },
+      { icon: BuildingOfficeIcon, text: 'Customized Commercial Plans' },
+      { icon: LockClosedIcon, text: 'Secure & Discreet Service' },
+    ]
+  },
+];
 
-// Mocking some booked slots for demonstration purposes.
-// In a real app, this would come from an API.
-// Format: 'YYYY-MM-DD-HH' (24-hour format)
-export const MOCKED_BOOKED_SLOTS = new Set([
-  new Date(new Date().setDate(new Date().getDate() + 2)).toISOString().slice(0, 10) + '-10',
-  new Date(new Date().setDate(new Date().getDate() + 2)).toISOString().slice(0, 10) + '-11',
-  new Date(new Date().setDate(new Date().getDate() + 3)).toISOString().slice(0, 10) + '-14',
-  new Date(new Date().setDate(new Date().getDate() + 5)).toISOString().slice(0, 10) + '-09',
-]);
+
+export const HOW_IT_WORKS_STEPS: ProcessStep[] = [
+  {
+    icon: PhoneArrowUpRightIcon,
+    title: '1. Get a Free Estimate',
+    description: 'Contact us via phone or our online form to tell us about your cleaning needs. We\'ll provide a no-obligation estimate.',
+  },
+  {
+    icon: CalendarDaysIcon,
+    title: '2. Book Your Service',
+    description: 'Choose a date and time that works for you. We offer flexible scheduling to fit your busy life.',
+  },
+  {
+    icon: CheckBadgeIcon,
+    title: '3. Enjoy Your Clean Home',
+    description: 'Our professional team will arrive on time and transform your space. Relax and enjoy the KasaGlow shine!',
+  },
+];
+
+export const TESTIMONIALS: Testimonial[] = [
+  {
+    quote: "KasaGlow completely transformed my apartment! The attention to detail was incredible. I've never seen my kitchen shine like this. Highly recommend their deep cleaning service.",
+    author: 'Sarah J.',
+    location: 'Springfield, NJ',
+    rating: 5,
+  },
+  {
+    quote: "As a dog owner, I was so impressed with their pet-friendly service. The house smells amazing and I have peace of mind knowing the products are safe for my pup.",
+    author: 'Jessica P.',
+    location: 'Jersey City, NJ',
+    rating: 5,
+  },
+  {
+    quote: "The move-out clean was a lifesaver. It passed the landlord's inspection with flying colors, and I got my full deposit back. So professional and thorough.",
+    author: 'Michael B.',
+    location: 'Brooklyn, NY',
+    rating: 5,
+  },
+  {
+    quote: "We use KasaGlow for our weekly office cleaning, and the difference is night and day. The team is reliable, efficient, and always leaves the place looking immaculate.",
+    author: 'David L., Office Manager',
+    location: 'Philadelphia, PA',
+    rating: 5,
+  },
+];
+
+export const LOCATIONS: Location[] = [
+  {
+    state: 'New Jersey',
+    cities: ['Jersey City', 'Newark', 'Princeton', 'Springfield', 'Hoboken'],
+    image: '/images/jerseycity_skyline.jpg'
+  },
+  {
+    state: 'New York',
+    cities: ['Manhattan', 'Brooklyn', 'Queens', 'The Bronx', 'Staten Island'],
+    image: '/images/newyork_skyline.jpg'
+  },
+  {
+    state: 'Pennsylvania',
+    cities: ['Philadelphia', 'King of Prussia', 'Bala Cynwyd', 'West Chester', 'Doylestown'],
+    image: '/images/philly_skyline.jpg'
+  }
+];

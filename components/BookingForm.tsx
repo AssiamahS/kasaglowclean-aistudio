@@ -1,7 +1,10 @@
 
+
 import React, { useState } from 'react';
 import type { Service, Customer } from '../types';
-import { ClockIcon, PriceTagIcon, CalendarIcon, UserIcon, MailIcon, PhoneIcon, LocationMarkerIcon } from './IconComponents';
+// FIX: Replaced CalendarIcon with CalendarDaysIcon and imported missing icons
+// FIX: The missing icons 'ClockIcon', 'PriceTagIcon', and 'LocationMarkerIcon' were added to IconComponents.tsx to resolve the import error.
+import { ClockIcon, PriceTagIcon, CalendarDaysIcon, UserIcon, MailIcon, PhoneIcon, LocationMarkerIcon } from './IconComponents';
 
 interface BookingFormProps {
   service: Service;
@@ -101,9 +104,10 @@ const BookingForm: React.FC<BookingFormProps> = ({ service, dateTime, onConfirm 
           <div className="bg-base-200 p-6 rounded-lg sticky top-8">
             <h3 className="text-xl font-bold mb-4">Booking Summary</h3>
             <div className="space-y-3 text-gray-700">
-              <p className="font-semibold text-lg">{service.name}</p>
+              {/* FIX: Changed property 'name' to 'title' to match the 'Service' type definition. */}
+              <p className="font-semibold text-lg">{service.title}</p>
               <div className="flex items-start text-sm">
-                <CalendarIcon className="h-5 w-5 mr-2 text-neutral flex-shrink-0 mt-0.5" />
+                <CalendarDaysIcon className="h-5 w-5 mr-2 text-neutral flex-shrink-0 mt-0.5" />
                 <span>{dateTime.toLocaleDateString('default', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</span>
               </div>
               <div className="flex items-center text-sm">

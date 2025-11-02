@@ -1,6 +1,10 @@
+
+
 import React, { useState } from 'react';
 import type { BookingDetails } from '../types';
-import { CalendarIcon, MailIcon, CreditCardIcon, LockClosedIcon } from './IconComponents';
+// FIX: Replaced CalendarIcon with CalendarDaysIcon and imported missing icons
+// FIX: The missing 'CreditCardIcon' was added to IconComponents.tsx to resolve the import error.
+import { CalendarDaysIcon, MailIcon, CreditCardIcon, LockClosedIcon } from './IconComponents';
 
 interface PaymentProps {
   details: Required<Pick<BookingDetails, 'service' | 'dateTime' | 'customer'>>;
@@ -61,7 +65,8 @@ const Payment: React.FC<PaymentProps> = ({ details, onConfirm }) => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <p className="text-sm font-semibold text-gray-600">Service</p>
-            <p className="text-lg font-bold text-gray-800">{service.name}</p>
+            {/* FIX: Changed property 'name' to 'title' to match the 'Service' type definition. */}
+            <p className="text-lg font-bold text-gray-800">{service.title}</p>
           </div>
           <div>
             <p className="text-sm font-semibold text-gray-600">Contact</p>
@@ -73,7 +78,7 @@ const Payment: React.FC<PaymentProps> = ({ details, onConfirm }) => {
           <div className="col-span-full">
             <p className="text-sm font-semibold text-gray-600">Date & Time</p>
             <div className="flex items-center text-gray-800">
-              <CalendarIcon className="h-5 w-5 mr-2 text-neutral" />
+              <CalendarDaysIcon className="h-5 w-5 mr-2 text-neutral" />
               <span>{dateTime.toLocaleDateString('default', { month: 'long', day: 'numeric', year: 'numeric' })}, {dateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}</span>
             </div>
           </div>

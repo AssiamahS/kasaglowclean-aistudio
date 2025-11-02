@@ -1,10 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>KasaGlowClean Booking Service</title>
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://aistudiocdn.com;
+      style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://rsms.me;
+      font-src 'self' https://rsms.me;
+      img-src 'self' data: https:;
+      connect-src 'self' https://aistudiocdn.com;
+    ">
+    <title>KasaGlow Cleaning Services</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -18,9 +26,9 @@
               'secondary-focus': '#EAB308', // Yellow 500
               accent: '#38BDF8', // Sky 400
               neutral: '#4B5563', // Gray 600
-              'base-100': '#F9FAFB', // Gray 50
-              'base-200': '#F3F4F6', // Gray 100
-              'base-300': '#E5E7EB', // Gray 200
+              'base-100': '#FFFFFF', // White
+              'base-200': '#F9FAFB', // Gray 50
+              'base-300': '#F3F4F6', // Gray 100
               info: '#2563EB',
               success: '#16A34A',
               warning: '#F59E0B',
@@ -43,6 +51,7 @@
   }
 }
 </script>
+<link rel="stylesheet" href="/index.css">
 </head>
   <body class="bg-base-100 antialiased">
     <div id="root"></div>

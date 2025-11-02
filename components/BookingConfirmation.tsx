@@ -1,7 +1,10 @@
 
+
 import React from 'react';
 import type { BookingDetails } from '../types';
-import { CalendarIcon, ClockIcon, LocationMarkerIcon, PriceTagIcon, UserIcon, MailIcon, PhoneIcon, CheckCircleIcon } from './IconComponents';
+// FIX: Replaced CalendarIcon with CalendarDaysIcon and imported missing icons
+// FIX: The missing icons 'ClockIcon', 'LocationMarkerIcon', and 'PriceTagIcon' were added to IconComponents.tsx to resolve the import error.
+import { CalendarDaysIcon, ClockIcon, LocationMarkerIcon, PriceTagIcon, UserIcon, MailIcon, PhoneIcon, CheckCircleIcon } from './IconComponents';
 
 interface BookingConfirmationProps {
   details: BookingDetails;
@@ -32,12 +35,13 @@ const BookingConfirmation: React.FC<BookingConfirmationProps> = ({ details, onRe
 
       <div className="bg-base-200/50 rounded-lg p-4 sm:p-6 text-left border border-base-300 divide-y divide-base-300">
         <div className="pb-4">
-          <h3 className="text-xl font-bold mb-2">{service.name}</h3>
+          {/* FIX: Changed property 'name' to 'title' to match the 'Service' type definition. */}
+          <h3 className="text-xl font-bold mb-2">{service.title}</h3>
           <p className="text-sm text-neutral">Confirmation ID: <br className="sm:hidden"/><span className="font-mono bg-base-300/50 px-2 py-1 rounded">{confirmationId}</span></p>
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 sm:gap-x-6">
-          <DetailRow icon={<CalendarIcon className="h-5 w-5"/>} label="Date" value={dateTime.toLocaleDateString('default', { weekday: 'long', month: 'long', day: 'numeric' })} />
+          <DetailRow icon={<CalendarDaysIcon className="h-5 w-5"/>} label="Date" value={dateTime.toLocaleDateString('default', { weekday: 'long', month: 'long', day: 'numeric' })} />
           <DetailRow icon={<ClockIcon className="h-5 w-5"/>} label="Time" value={dateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })} />
           <DetailRow icon={<LocationMarkerIcon className="h-5 w-5"/>} label="Address" value={customer.address} />
           <DetailRow icon={<PriceTagIcon className="h-5 w-5"/>} label="Reservation Fee Paid" value={`$${service.reservationFee}`} />
