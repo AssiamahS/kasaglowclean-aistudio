@@ -40,11 +40,11 @@ const Header: React.FC = () => {
   const closeMenu = () => setIsMenuOpen(false);
 
   return (
-    <header className={`sticky top-0 z-50 w-full transition-all duration-300 ${isScrolled || isMenuOpen ? 'bg-white shadow-md' : 'bg-transparent'}`}>
+    <header className={`sticky top-0 z-50 w-full transition-all duration-300 ${isScrolled || isMenuOpen ? 'bg-white shadow-md' : 'bg-white shadow-sm'}`}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between py-3">
           <a href="#/" className="flex-shrink-0">
-            <KasaGlowLogo className="h-auto w-48 sm:w-56" />
+            <KasaGlowLogo className={`h-auto transition-all duration-300 ${isScrolled ? 'w-40 sm:w-48' : 'w-48 sm:w-56'}`} />
           </a>
 
           <div className="hidden lg:flex items-center space-x-2">
