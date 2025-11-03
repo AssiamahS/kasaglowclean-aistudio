@@ -16,7 +16,7 @@ const faqData: FAQItem[] = [
   },
   {
     question: "What cleaning services do you offer?",
-    answer: "We offer Regular Cleaning, Deep Cleaning, Move In/Out Cleaning, and Office Cleaning services. Each service is customizable to meet your specific requirements."
+    answer: "We offer Residential Cleaning, Deep Cleaning, Move In/Out Cleaning, and Commercial Cleaning services. Each service is customizable to meet your specific requirements."
   },
   {
     question: "Do I need to provide cleaning supplies?",

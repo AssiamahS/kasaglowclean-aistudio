@@ -21,7 +21,7 @@ export const MOCKED_BOOKED_SLOTS = new Set<string>([
 export const SERVICES: Service[] = [
   {
     icon: HomeIcon,
-    title: 'Regular Cleaning',
+    title: 'Residential Cleaning',
     description: 'Keep your home consistently clean with our scheduled cleaning services. Weekly, bi-weekly, or monthly options available.',
     // FIX: Added 'duration' and 'reservationFee' to match the updated Service type.
     duration: 120,
@@ -45,8 +45,8 @@ export const SERVICES: Service[] = [
   },
   {
     icon: BuildingOfficeIcon,
-    title: 'Office Cleaning',
-    description: 'Maintain a clean, healthy, and productive workspace for your employees and clients with our professional office cleaning.',
+    title: 'Commercial Cleaning',
+    description: 'Maintain a clean, healthy, and productive workspace for your employees and clients with our professional commercial cleaning.',
     // FIX: Added 'duration' and 'reservationFee' to match the updated Service type.
     duration: 150,
     reservationFee: 35,

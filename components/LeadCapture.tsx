@@ -131,10 +131,10 @@ const LeadCapture: React.FC = () => {
               <InputField id="phone" name="phone" type="tel" label="Phone Number" icon={<PhoneIcon className="h-5 w-5"/>} required />
               <InputField id="service" name="service" label="Service of Interest" as="select">
                 <option>Select a service</option>
-                <option>Regular Cleaning</option>
+                <option>Residential Cleaning</option>
                 <option>Deep Cleaning</option>
                 <option>Move In/Out Cleaning</option>
-                <option>Office Cleaning</option>
+                <option>Commercial Cleaning</option>
               </InputField>
               <InputField id="message" name="message" label="Message" as="textarea" placeholder="Tell us about your cleaning needs..."/>
               <button
