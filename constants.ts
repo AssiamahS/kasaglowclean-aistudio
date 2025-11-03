@@ -80,7 +80,7 @@ export const FEATURE_SLIDES: FeatureSlide[] = [
   },
   {
     image: 'https://images.unsplash.com/photo-1583501653320-27a0a283a553?q=80&w=2070&auto=format&fit=crop',
-    video: '/videos/garage-cleaning.mov',
+    video: '/videos/garage-cleaning.mp4',
     title: 'Beyond the Living Room',
     subtitle: 'Garage & Outdoor Area Cleaning',
     description: 'Let us tackle the dirtiest parts of your home. We offer comprehensive garage cleaning and organization services to reclaim your space.',

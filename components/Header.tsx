@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { name: 'About', href: '#/about' },
   { name: 'Locations', href: '#/locations'},
   { name: 'Process', href: '#/#process' }, // Anchor link on home
+  { name: 'Careers', href: '#/careers' },
   { name: 'Admin', href: '#/admin' },
 ];
 
@@ -37,14 +38,26 @@ const Header: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMenuOpen]);
+
   const closeMenu = () => setIsMenuOpen(false);
 
   return (
     <header className={`sticky top-0 z-50 w-full transition-all duration-300 ${isScrolled || isMenuOpen ? 'bg-white shadow-md' : 'bg-white shadow-sm'}`}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between py-3">
-          <a href="#/" className="flex-shrink-0">
-            <KasaGlowLogo className={`h-auto transition-all duration-300 ${isScrolled ? 'w-40 sm:w-48' : 'w-48 sm:w-56'}`} />
+          <a href="#/" className="flex-shrink-0 flex items-center h-12 sm:h-14">
+            <KasaGlowLogo className="h-full w-auto transition-all duration-300" />
           </a>
 
           <div className="hidden lg:flex items-center space-x-2">
@@ -70,7 +83,7 @@ const Header: React.FC = () => {
       </div>
 
       {/* Mobile Menu */}
-      <div className={`lg:hidden fixed inset-0 bg-white z-50 transform ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'} transition-transform duration-300 ease-in-out`}>
+      <div className={`lg:hidden fixed inset-0 bg-white z-[60] transform ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'} transition-transform duration-300 ease-in-out`}>
         <div className="flex justify-between items-center py-3 px-4 border-b">
            <a href="#/" onClick={closeMenu}>
              <KasaGlowLogo className="h-auto w-48" />

@@ -17,6 +17,8 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onCancel }) => {
     setError('');
     // Hardcoded credentials for demonstration
     if (username === 'admin' && password === 'password123') {
+      // store admin token (used to authenticate admin API requests)
+      try { sessionStorage.setItem('adminToken', password); } catch (e) {}
       onLoginSuccess();
     } else {
       setError('Invalid username or password.');

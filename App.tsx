@@ -7,14 +7,22 @@ import AboutPage from './components/WhyChooseUs';
 import LocationsPage from './components/Locations';
 import AdminPage from './components/AdminView';
 import ContactPage from './components/LeadCapture';
+import EmploymentTab from './components/EmploymentTab';
+import FAQ from './components/FAQ';
+import PrivacyPolicy from './components/PrivacyPolicy';
+import TermsOfService from './components/TermsOfService';
 
 const routes: { [key: string]: React.FC } = {
   '/': HomePage,
   '/services': ServicesPage,
   '/about': AboutPage,
   '/locations': LocationsPage,
+  '/careers': EmploymentTab,
   '/admin': AdminPage,
   '/contact': ContactPage,
+  '/faq': FAQ,
+  '/privacy': PrivacyPolicy,
+  '/terms': TermsOfService,
   '/process': HomePage, // Anchors to section on homepage
 };
 

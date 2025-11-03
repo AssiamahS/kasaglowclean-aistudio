@@ -118,9 +118,9 @@ const LeadCapture: React.FC = () => {
                 <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10"><PhoneIcon className="h-6 w-6 text-primary" /></span>
                 <span className="font-semibold">(908) 417-5388</span>
               </a>
-              <a href="mailto:contact@kasaglow.com" className="flex items-center gap-4 text-lg text-neutral hover:text-primary transition-colors">
+              <a href="mailto:info@kasaglowclean.com" className="flex items-center gap-4 text-lg text-neutral hover:text-primary transition-colors">
                 <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10"><MailIcon className="h-6 w-6 text-primary" /></span>
-                <span className="font-semibold">contact@kasaglow.com</span>
+                <span className="font-semibold">info@kasaglowclean.com</span>
               </a>
             </div>
           </div>

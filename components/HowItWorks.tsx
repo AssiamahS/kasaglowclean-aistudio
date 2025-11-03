@@ -6,9 +6,6 @@ const StepCard: React.FC<{ step: ProcessStep, index: number }> = ({ step, index 
   const Icon = step.icon;
   return (
     <div className="relative text-center">
-       {index < HOW_IT_WORKS_STEPS.length - 1 && (
-        <div className="hidden md:block absolute top-10 left-1/2 w-full h-0.5 bg-gray-200" style={{ transform: 'translateX(50%)' }}></div>
-      )}
       <div className="relative bg-white z-10 inline-flex items-center justify-center h-20 w-20 mb-6 rounded-full bg-primary/10 text-primary border-4 border-white ring-4 ring-primary/10">
         <Icon className="h-10 w-10" />
       </div>
@@ -26,10 +23,12 @@ const HowItWorks: React.FC = () => {
         <p className="text-lg text-neutral mb-16 max-w-3xl mx-auto">
           Getting a sparkling clean home is as easy as 1-2-3.
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
-          {HOW_IT_WORKS_STEPS.map((step, index) => (
-            <StepCard key={step.title} step={step} index={index} />
-          ))}
+        <div className="relative">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8 relative z-10">
+            {HOW_IT_WORKS_STEPS.map((step, index) => (
+              <StepCard key={step.title} step={step} index={index} />
+            ))}
+          </div>
         </div>
       </div>
     </section>

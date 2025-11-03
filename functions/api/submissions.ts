@@ -1,6 +1,60 @@
 // API endpoint to manage submissions for admin panel
 interface Env {
-  DB: D1Database;
+  // Use any to avoid local type issues when D1/D1 types are not present in the environment
+  DB: any;
+  // Optional R2 bucket binding (set in wrangler.toml as an r2_bucket binding)
+  RESUMES?: any;
+}
+
+// POST - Accept new submission (from public apply form)
+export async function onRequestPost(context: { request: Request; env: Env }) {
+  try {
+    const data = await context.request.json();
+    const { name, email, phone, service, message, resumeName, resumeData, timestamp } = data;
+
+    if (!name || !email || !service) {
+      return new Response(JSON.stringify({ ok: false, error: 'name, email and service are required' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+      });
+    }
+
+    const ts = timestamp || new Date().toISOString();
+
+    // If an R2 bucket is configured, upload resume there and store the key in resume_url
+    let resume_url: string | null = null;
+    if (resumeData && context.env.RESUMES) {
+      try {
+        const matches = String(resumeData).match(/^data:(.+);base64,(.*)$/);
+        if (matches) {
+          const contentType = matches[1];
+          const b64 = matches[2];
+          const binary = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+          const safeName = (resumeName || 'resume').replace(/[^a-z0-9._-]/gi, '_');
+          const filename = `${Date.now()}_${safeName}`;
+          await context.env.RESUMES.put(filename, binary, { httpMetadata: { contentType } });
+          resume_url = filename;
+        }
+      } catch (e) {
+        console.error('Failed to upload resume to R2, will fallback to storing data in D1', e);
+      }
+    }
+
+    await context.env.DB.prepare(`INSERT INTO submissions (name, email, phone, service, message, resume_name, resume_data, resume_url, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+      .bind(name, email, phone || null, service, message || '', resumeName || null, resumeData || null, resume_url, ts)
+      .run();
+
+    return new Response(JSON.stringify({ ok: true, message: 'Submission saved' }), {
+      status: 201,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+    });
+  } catch (error) {
+    console.error('Error inserting submission:', error);
+    return new Response(JSON.stringify({ ok: false, error: 'Failed to save submission' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
+    });
+  }
 }
 
 // GET - Fetch all submissions

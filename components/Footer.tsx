@@ -17,12 +17,12 @@ const Footer: React.FC = () => {
         {name: 'Process', href: '#/#process'}
     ],
     Support: [
-        {name: 'Contact', href: '#/contact'}, 
-        {name: 'FAQs', href: '#/contact'}
+        {name: 'Contact', href: '#/contact'},
+        {name: 'FAQs', href: '#/faq'}
     ],
     Legal: [
-        {name: 'Privacy Policy', href: '#/'}, 
-        {name: 'Terms of Service', href: '#/'}
+        {name: 'Privacy Policy', href: '#/privacy'},
+        {name: 'Terms of Service', href: '#/terms'}
     ],
   };
 
