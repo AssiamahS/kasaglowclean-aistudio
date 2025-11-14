@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 type Job = {
   id: number;
@@ -257,12 +258,12 @@ const EmploymentTab: React.FC = () => {
                 >
                   View Other Positions
                 </button>
-                <a
-                  href="#/"
+                <Link
+                  to="/"
                   className="px-6 py-3 bg-gray-200 text-gray-800 font-bold rounded-lg shadow-md hover:bg-gray-300 transition-colors"
                 >
                   Back to Home
-                </a>
+                </Link>
               </div>
             </div>
           </div>

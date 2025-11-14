@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import type { FeatureSlide } from '../types';
 import { FEATURE_SLIDES } from '../constants';
 import { ChevronLeftIcon, ChevronRightIcon } from './IconComponents';
@@ -74,10 +75,10 @@ const WhyChooseUs: React.FC = () => {
                 )
               })}
             </div>
-             <a href="#/contact" className="inline-flex items-center gap-2 mt-4 px-6 py-3 bg-primary text-primary-content font-bold rounded-lg shadow-md hover:bg-primary-focus transition-colors">
+             <Link to="/contact" className="inline-flex items-center gap-2 mt-4 px-6 py-3 bg-primary text-primary-content font-bold rounded-lg shadow-md hover:bg-primary-focus transition-colors">
               Request Your Free Estimate
               <ChevronRightIcon className="h-5 w-5" />
-            </a>
+            </Link>
           </div>
         </div>
       </div>

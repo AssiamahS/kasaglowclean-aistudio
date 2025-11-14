@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import type { Location } from '../types';
 import { LOCATIONS } from '../constants';
 import { MapPinIcon } from './IconComponents';
@@ -45,9 +46,9 @@ const LocationsPage: React.FC = () => {
         <div className="mt-16 text-center bg-white p-8 rounded-lg shadow-md border border-base-300">
             <h3 className="text-2xl font-bold text-gray-800">Don't See Your Location?</h3>
             <p className="mt-2 text-neutral max-w-2xl mx-auto">We are constantly expanding! Contact us today to see if we can bring the KasaGlow shine to your neighborhood.</p>
-            <a href="#/contact" className="mt-6 inline-block px-8 py-3 bg-primary text-primary-content font-bold rounded-lg shadow-md hover:bg-primary-focus transition-colors">
+            <Link to="/contact" className="mt-6 inline-block px-8 py-3 bg-primary text-primary-content font-bold rounded-lg shadow-md hover:bg-primary-focus transition-colors">
               Request Service
-            </a>
+            </Link>
         </div>
       </div>
     </section>

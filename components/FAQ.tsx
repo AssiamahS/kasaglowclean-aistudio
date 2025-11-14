@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 interface FAQItem {
   question: string;
@@ -115,12 +116,12 @@ const FAQ: React.FC = () => {
             >
               Call (908) 417-5388
             </a>
-            <a
-              href="#/contact"
+            <Link
+              to="/contact"
               className="px-6 py-3 bg-white text-primary font-bold rounded-lg shadow-md hover:bg-gray-50 transition-colors"
             >
               Contact Us
-            </a>
+            </Link>
           </div>
         </div>
       </div>

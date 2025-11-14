@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const KasaGlowLogo: React.FC<{ className?: string }> = ({ className }) => (
   <img
@@ -11,18 +12,18 @@ const KasaGlowLogo: React.FC<{ className?: string }> = ({ className }) => (
 const Footer: React.FC = () => {
   const links = {
     Company: [
-        {name: 'About', href: '#/about'}, 
-        {name: 'Services', href: '#/services'}, 
-        {name: 'Locations', href: '#/locations'},
-        {name: 'Process', href: '#/#process'}
+        {name: 'About', to: '/about'},
+        {name: 'Services', to: '/services'},
+        {name: 'Locations', to: '/locations'},
+        {name: 'Process', to: '/', scrollTo: 'process'}
     ],
     Support: [
-        {name: 'Contact', href: '#/contact'},
-        {name: 'FAQs', href: '#/faq'}
+        {name: 'Contact', to: '/contact'},
+        {name: 'FAQs', to: '/faq'}
     ],
     Legal: [
-        {name: 'Privacy Policy', href: '#/privacy'},
-        {name: 'Terms of Service', href: '#/terms'}
+        {name: 'Privacy Policy', to: '/privacy'},
+        {name: 'Terms of Service', to: '/terms'}
     ],
   };
 
@@ -31,7 +32,7 @@ const Footer: React.FC = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 max-w-7xl">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div className="lg:col-span-4">
-            <a href="#/"><KasaGlowLogo className="h-auto w-48 mb-4" /></a>
+            <Link to="/"><KasaGlowLogo className="h-auto w-48 mb-4" /></Link>
             <p className="text-gray-400">Your trusted partner for a spotless space.</p>
           </div>
           
@@ -42,7 +43,20 @@ const Footer: React.FC = () => {
                 <ul className="mt-4 space-y-2">
                   {items.map(item => (
                     <li key={item.name}>
-                      <a href={item.href} className="text-gray-400 hover:text-white transition-colors">{item.name}</a>
+                      <Link
+                        to={item.to}
+                        onClick={() => {
+                          if ('scrollTo' in item && item.scrollTo) {
+                            setTimeout(() => {
+                              const element = document.getElementById(item.scrollTo);
+                              if (element) element.scrollIntoView({ behavior: 'smooth' });
+                            }, 100);
+                          }
+                        }}
+                        className="text-gray-400 hover:text-white transition-colors"
+                      >
+                        {item.name}
+                      </Link>
                     </li>
                   ))}
                 </ul>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Hero: React.FC = () => {
   return (
@@ -16,12 +17,12 @@ const Hero: React.FC = () => {
           <p className="mt-4 text-lg md:text-xl text-gray-200">
             Reclaim your time and enjoy a sparkling clean home with KasaGlow. Your satisfaction is guaranteed.
           </p>
-          <a
-            href="#/contact"
+          <Link
+            to="/contact"
             className="mt-8 inline-block px-8 py-4 bg-primary text-primary-content text-lg font-bold rounded-lg shadow-lg hover:bg-primary-focus transition-colors transform hover:scale-105"
           >
             Get a Free Estimate
-          </a>
+          </Link>
         </div>
       </div>
     </section>
