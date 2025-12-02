@@ -12,7 +12,7 @@ import EmploymentTab from './components/EmploymentTab';
 import FAQ from './components/FAQ';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsOfService from './components/TermsOfService';
-import Payment from './components/Payment';
+import PaymentPage from './components/PaymentPage';
 
 // Component to handle scroll to top on route changes
 const ScrollToTop: React.FC = () => {
@@ -40,7 +40,7 @@ const App: React.FC = () => {
             <Route path="/careers" element={<EmploymentTab />} />
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/contact" element={<ContactPage />} />
-            <Route path="/pay" element={<Payment />} />
+            <Route path="/pay" element={<PaymentPage />} />
             <Route path="/faq" element={<FAQ />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
