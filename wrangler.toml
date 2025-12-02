@@ -11,7 +11,8 @@ database_id = "4b729739-978c-41ac-af74-7ad8df3b943d"
 
 # Environment variables
 [vars]
-# Add any public environment variables here
+PAYPAL_ENV = "sandbox"
+STRIPE_PUBLIC_KEY = "pk_live_xxxxxxxxxx"
 
 # Secrets (set via wrangler secret put)
 # RESEND_API_KEY - for sending emails
