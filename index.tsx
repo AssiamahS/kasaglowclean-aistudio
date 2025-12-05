@@ -2,6 +2,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import { initLiveLogger } from './src/utils/liveLogger';
+
+// Initialize live logging for Claude
+initLiveLogger();
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
