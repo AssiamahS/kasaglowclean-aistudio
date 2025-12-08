@@ -149,7 +149,6 @@ export const TESTIMONIALS: Testimonial[] = [
     rating: 5,
   },
 ];
-
 export const LOCATIONS: Location[] = [
   {
     state: 'North Jersey',
@@ -167,3 +166,4 @@ export const LOCATIONS: Location[] = [
     image: '/images/philly_skyline.jpg'
   }
 ];
+
