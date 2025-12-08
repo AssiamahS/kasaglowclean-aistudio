@@ -127,43 +127,43 @@ export const TESTIMONIALS: Testimonial[] = [
   {
     quote: "KasaGlow completely transformed my apartment! The attention to detail was incredible. I've never seen my kitchen shine like this. Highly recommend their deep cleaning service.",
     author: 'Sarah J.',
-    location: 'Springfield, NJ',
+    location: '',
     rating: 5,
   },
   {
     quote: "As a dog owner, I was so impressed with their pet-friendly service. The house smells amazing and I have peace of mind knowing the products are safe for my pup.",
     author: 'Jessica P.',
-    location: 'Jersey City, NJ',
+    location: '',
     rating: 5,
   },
   {
     quote: "The move-out clean was a lifesaver. It passed the landlord's inspection with flying colors, and I got my full deposit back. So professional and thorough.",
     author: 'Michael B.',
-    location: 'Brooklyn, NY',
+    location: '',
     rating: 5,
   },
   {
     quote: "We use KasaGlow for our weekly office cleaning, and the difference is night and day. The team is reliable, efficient, and always leaves the place looking immaculate.",
     author: 'David L., Office Manager',
-    location: 'Philadelphia, PA',
+    location: '',
     rating: 5,
   },
 ];
 
 export const LOCATIONS: Location[] = [
   {
-    state: 'New Jersey',
-    cities: ['Jersey City', 'Newark', 'Princeton', 'Springfield', 'Hoboken'],
+    state: 'North Jersey',
+    cities: [],
     image: '/images/jerseycity_skyline.jpg'
   },
   {
-    state: 'New York',
-    cities: ['Manhattan', 'Brooklyn', 'Queens', 'The Bronx', 'Staten Island'],
+    state: 'South Jersey',
+    cities: [],
     image: '/images/newyork_skyline.jpg'
   },
   {
-    state: 'Pennsylvania',
-    cities: ['Philadelphia', 'King of Prussia', 'Bala Cynwyd', 'West Chester', 'Doylestown'],
+    state: 'Philly',
+    cities: [],
     image: '/images/philly_skyline.jpg'
   }
 ];

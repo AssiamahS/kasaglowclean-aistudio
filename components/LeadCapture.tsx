@@ -67,9 +67,36 @@ const LeadCapture: React.FC = () => {
     }
   };
 
-  const handleDateTimeSelect = (dateTime: Date) => {
-    console.log('Selected date/time:', dateTime, 'for service:', formData?.service);
-    setSubmitted(true);
+  const handleDateTimeSelect = async (dateTime: Date) => {
+    if (!formData) return;
+
+    try {
+      // Get the stored submission to find the clientId
+      const stored = localStorage.getItem('leadSubmissions');
+      const submissions = stored ? JSON.parse(stored) : [];
+      const clientSubmission = submissions.find((s: any) =>
+        s.email === formData.email && s.name === formData.name
+      );
+
+      const clientId = clientSubmission ? `local-${clientSubmission.id}` : `local-${Date.now()}`;
+
+      // Save appointment to database
+      await fetch('/api/appointments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          clientId: clientId,
+          dateTime: dateTime.toISOString(),
+          service: formData.service,
+          notes: formData.message || ''
+        })
+      });
+
+      setSubmitted(true);
+    } catch (err) {
+      console.error('Failed to create appointment:', err);
+      setSubmitted(true); // Still show success to user
+    }
   };
 
   if (submitted) {

@@ -13,14 +13,7 @@ const LocationCard: React.FC<{ location: Location }> = ({ location }) => {
           <MapPinIcon className="h-6 w-6 text-primary" />
           {location.state}
         </h3>
-        <p className="text-neutral mt-2 mb-4">Proudly serving communities across the state, including:</p>
-        <ul className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-700">
-            {location.cities.map(city => (
-                <li key={city} className="truncate">
-                  <span className="text-primary mr-1">✓</span>{city}
-                </li>
-            ))}
-        </ul>
+        <p className="text-neutral mt-4">Professional cleaning services available throughout the entire region.</p>
       </div>
     </div>
   );
