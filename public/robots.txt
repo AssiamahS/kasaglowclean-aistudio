@@ -1,0 +1,20 @@
+# kasaglowclean.com robots.txt
+User-agent: *
+Allow: /
+Allow: /#services
+Allow: /#about
+Allow: /#contact
+Allow: /#locations
+Allow: /#careers
+Allow: /privacy
+Allow: /terms
+
+# Disallow admin pages
+Disallow: /admin
+Disallow: /api/
+
+# Sitemap
+Sitemap: https://kasaglowclean.com/sitemap.xml
+
+# Crawl-delay (optional)
+Crawl-delay: 1
