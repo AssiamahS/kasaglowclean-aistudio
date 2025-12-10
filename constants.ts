@@ -159,12 +159,12 @@ export const LOCATIONS: Location[] = [
   {
     state: 'North Jersey',
     cities: [],
-    image: '/images/jerseycity_skyline.jpg'
+    image: '/images/newyork_skyline.jpg'
   },
   {
     state: 'South Jersey',
     cities: [],
-    image: '/images/newyork_skyline.jpg'
+    image: '/images/atlantic-city-4020882_1280.jpg'
   },
   {
     state: 'Philly',
