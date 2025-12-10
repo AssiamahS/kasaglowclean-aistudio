@@ -101,6 +101,24 @@ const AdminView: React.FC = () => {
     });
   }, [appointments]);
 
+  // Generate consistent color for each client
+  const getClientColor = useCallback((clientId: number | string) => {
+    const colors = [
+      '#3b82f6', // Blue
+      '#10b981', // Green
+      '#f59e0b', // Amber
+      '#ef4444', // Red
+      '#8b5cf6', // Purple
+      '#ec4899', // Pink
+      '#06b6d4', // Cyan
+      '#f97316', // Orange
+      '#84cc16', // Lime
+      '#6366f1', // Indigo
+    ];
+    const hash = String(clientId).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return colors[hash % colors.length];
+  }, []);
+
   // Handle event drag and drop (reschedule)
   const handleEventDrop = useCallback(async ({ event, start, end }: any) => {
     try {
@@ -829,7 +847,7 @@ const AdminView: React.FC = () => {
                 showMultiDayTimes
                 eventPropGetter={(event) => ({
                   style: {
-                    backgroundColor: '#3b82f6',
+                    backgroundColor: getClientColor(event.resource.clientId),
                     borderRadius: '5px',
                     opacity: 0.8,
                     color: 'white',

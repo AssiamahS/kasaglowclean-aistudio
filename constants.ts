@@ -125,20 +125,26 @@ export const HOW_IT_WORKS_STEPS: ProcessStep[] = [
 
 export const TESTIMONIALS: Testimonial[] = [
   {
-    quote: "KasaGlow completely transformed my apartment! The attention to detail was incredible. I've never seen my kitchen shine like this. Highly recommend their deep cleaning service.",
-    author: 'Sarah J.',
+    quote: "Our school has never looked better! KasaGlow keeps our classrooms spotless and the kids love coming to a clean environment. Very reliable service.",
+    author: 'Maria R., Teacher',
     location: '',
     rating: 5,
   },
   {
-    quote: "As a dog owner, I was so impressed with their pet-friendly service. The house smells amazing and I have peace of mind knowing the products are safe for my pup.",
-    author: 'Jessica P.',
+    quote: "As a nurse, cleanliness is everything. KasaGlow maintains hospital-grade standards in our medical office. Professional and thorough every single time.",
+    author: 'Jennifer K., Nurse',
     location: '',
     rating: 5,
   },
   {
-    quote: "The move-out clean was a lifesaver. It passed the landlord's inspection with flying colors, and I got my full deposit back. So professional and thorough.",
-    author: 'Michael B.',
+    quote: "Our marketing agency looks amazing thanks to KasaGlow. Clients are always impressed when they visit. Worth every penny for our brand image.",
+    author: 'Alex T., Marketing Director',
+    location: '',
+    rating: 5,
+  },
+  {
+    quote: "KasaGlow cleaned our construction site office and crew areas. They handled the dirt and dust like pros. Great job on a tough space.",
+    author: 'Mike D., Site Manager',
     location: '',
     rating: 5,
   },

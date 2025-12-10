@@ -84,5 +84,5 @@ export async function onRequestDelete(context: { request: Request; env: Env }) {
 }
 
 export async function onRequestOptions() {
-  return new Response(null, { headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST, PUT, DELETE, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' } });
+  return new Response(null, { headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST, PUT, DELETE, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type, x-admin-secret' } });
 }
