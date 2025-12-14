@@ -1,4 +1,6 @@
 // Cloudflare Pages Function for handling lead form submissions
+import { estimateRequestEmail } from '../emails/estimate-email';
+
 interface Env {
   DB: D1Database;
   RESEND_API_KEY?: string;
@@ -61,16 +63,15 @@ export async function onRequestPost(context: { request: Request; env: Env }) {
           },
           body: JSON.stringify({
             from: 'KasaGlow Cleaning <noreply@kasaglowclean.com>',
-            to: ['info@kasaglowclean.com'], // Update with your email
+            to: ['info@kasaglowclean.com'],
             subject: 'New Lead - Free Estimate Request',
-            html: `
-              <h2>New Lead Submission</h2>
-              <p><strong>Name:</strong> ${data.name}</p>
-              <p><strong>Email:</strong> ${data.email}</p>
-              <p><strong>Phone:</strong> ${data.phone || 'Not provided'}</p>
-              <p><strong>Service:</strong> ${data.service || 'Not specified'}</p>
-              <p><strong>Message:</strong> ${data.message || 'No message'}</p>
-            `,
+            html: estimateRequestEmail(
+              data.name,
+              data.email,
+              data.phone || '',
+              data.service || '',
+              data.message || ''
+            ),
           })
         });
       } catch (emailError) {
