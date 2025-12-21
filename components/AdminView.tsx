@@ -482,13 +482,13 @@ const AdminView: React.FC = () => {
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-2 mt-6 border-b border-gray-200">
+          <div className="flex gap-2 mt-6 border-b border-gray-200 overflow-x-auto">
             <button
               onClick={() => {
                 setActiveTab('clients');
                 setSelectedSubmission(null);
               }}
-              className={`px-6 py-3 font-semibold transition-colors relative ${
+              className={`px-3 md:px-6 py-3 font-semibold transition-colors relative whitespace-nowrap text-sm md:text-base ${
                 activeTab === 'clients'
                   ? 'text-primary border-b-2 border-primary'
                   : 'text-gray-600 hover:text-gray-900'
@@ -507,7 +507,7 @@ const AdminView: React.FC = () => {
                 setActiveTab('applicants');
                 setSelectedSubmission(null);
               }}
-              className={`px-6 py-3 font-semibold transition-colors relative ${
+              className={`px-3 md:px-6 py-3 font-semibold transition-colors relative whitespace-nowrap text-sm md:text-base ${
                 activeTab === 'applicants'
                   ? 'text-primary border-b-2 border-primary'
                   : 'text-gray-600 hover:text-gray-900'
@@ -526,7 +526,7 @@ const AdminView: React.FC = () => {
                 setActiveTab('jobs');
                 setSelectedSubmission(null);
               }}
-              className={`px-6 py-3 font-semibold transition-colors relative ${
+              className={`px-3 md:px-6 py-3 font-semibold transition-colors relative whitespace-nowrap text-sm md:text-base ${
                 activeTab === 'jobs'
                   ? 'text-primary border-b-2 border-primary'
                   : 'text-gray-600 hover:text-gray-900'
@@ -540,7 +540,7 @@ const AdminView: React.FC = () => {
                 setActiveTab('calendar');
                 setSelectedSubmission(null);
               }}
-              className={`px-6 py-3 font-semibold transition-colors relative ${
+              className={`px-3 md:px-6 py-3 font-semibold transition-colors relative whitespace-nowrap text-sm md:text-base ${
                 activeTab === 'calendar'
                   ? 'text-primary border-b-2 border-primary'
                   : 'text-gray-600 hover:text-gray-900'
@@ -554,7 +554,7 @@ const AdminView: React.FC = () => {
                 setActiveTab('forms');
                 setSelectedSubmission(null);
               }}
-              className={`px-6 py-3 font-semibold transition-colors relative ${
+              className={`px-3 md:px-6 py-3 font-semibold transition-colors relative whitespace-nowrap text-sm md:text-base ${
                 activeTab === 'forms'
                   ? 'text-primary border-b-2 border-primary'
                   : 'text-gray-600 hover:text-gray-900'
@@ -566,11 +566,11 @@ const AdminView: React.FC = () => {
 
           {/* Filters (only for clients/applicants tabs) */}
           {activeTab !== 'calendar' && activeTab !== 'jobs' && activeTab !== 'forms' && (
-          <div className="flex gap-2 mt-4">
-            <button onClick={loadSubmissions} className="px-3 py-2 border rounded">Reload Submissions</button>
+          <div className="flex flex-wrap gap-2 mt-4">
+            <button onClick={loadSubmissions} className="px-3 py-2 border rounded text-sm md:text-base">Reload Submissions</button>
             <button
               onClick={() => setFilter('all')}
-              className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
+              className={`px-3 md:px-4 py-2 rounded-lg font-semibold transition-colors text-sm md:text-base ${
                 filter === 'all'
                   ? 'bg-primary text-white'
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -580,7 +580,7 @@ const AdminView: React.FC = () => {
             </button>
             <button
               onClick={() => setFilter('unread')}
-              className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
+              className={`px-3 md:px-4 py-2 rounded-lg font-semibold transition-colors text-sm md:text-base ${
                 filter === 'unread'
                   ? 'bg-primary text-white'
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -590,7 +590,7 @@ const AdminView: React.FC = () => {
             </button>
             <button
               onClick={() => setFilter('read')}
-              className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
+              className={`px-3 md:px-4 py-2 rounded-lg font-semibold transition-colors text-sm md:text-base ${
                 filter === 'read'
                   ? 'bg-primary text-white'
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -826,7 +826,7 @@ const AdminView: React.FC = () => {
         {/* Calendar Tab Content */}
         <div className="space-y-6">
           {/* Visual Calendar */}
-          <div className="bg-white rounded-lg shadow-md p-6" style={{ height: '700px' }}>
+          <div className="hidden md:block bg-white rounded-lg shadow-md p-6" style={{ height: '700px' }}>
             <h3 className="text-lg font-bold text-gray-900 mb-4">Appointment Calendar</h3>
             <div style={{ height: 'calc(100% - 2rem)' }}>
               <DnDCalendar
@@ -860,7 +860,7 @@ const AdminView: React.FC = () => {
           </div>
 
           {/* Quick Create Appointment Form */}
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="hidden md:block bg-white rounded-lg shadow-md p-6">
             <h3 className="text-lg font-bold text-gray-900 mb-4">Quick Schedule Appointment</h3>
             <div className="grid md:grid-cols-2 gap-4">
               <div>
