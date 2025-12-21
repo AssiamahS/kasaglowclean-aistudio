@@ -568,6 +568,14 @@ const AdminView: React.FC = () => {
           {activeTab !== 'calendar' && activeTab !== 'jobs' && activeTab !== 'forms' && (
           <div className="flex flex-wrap gap-2 mt-4">
             <button onClick={loadSubmissions} className="px-3 py-2 border rounded text-sm md:text-base">Reload Submissions</button>
+            {activeTab === 'clients' && (
+              <button
+                onClick={() => setActiveTab('forms')}
+                className="px-3 md:px-4 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary-dark transition-colors text-sm md:text-base"
+              >
+                + Add Customer
+              </button>
+            )}
             <button
               onClick={() => setFilter('all')}
               className={`px-3 md:px-4 py-2 rounded-lg font-semibold transition-colors text-sm md:text-base ${
