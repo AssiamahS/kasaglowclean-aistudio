@@ -834,9 +834,9 @@ const AdminView: React.FC = () => {
         {/* Calendar Tab Content */}
         <div className="space-y-6">
           {/* Visual Calendar */}
-          <div className="hidden md:block bg-white rounded-lg shadow-md p-6" style={{ height: '700px' }}>
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Appointment Calendar</h3>
-            <div style={{ height: 'calc(100% - 2rem)' }}>
+          <div className="bg-white rounded-lg shadow-md p-3 md:p-6" style={{ height: '500px' }}>
+            <h3 className="text-base md:text-lg font-bold text-gray-900 mb-3 md:mb-4">Appointment Calendar</h3>
+            <div style={{ height: 'calc(100% - 2.5rem)' }}>
               <DnDCalendar
                 localizer={localizer}
                 events={calendarEvents}
@@ -849,7 +849,7 @@ const AdminView: React.FC = () => {
                 selectable
                 resizable
                 draggableAccessor={() => true}
-                defaultView="week"
+                defaultView="day"
                 views={['month', 'week', 'day', 'agenda']}
                 step={30}
                 showMultiDayTimes
@@ -868,8 +868,8 @@ const AdminView: React.FC = () => {
           </div>
 
           {/* Quick Create Appointment Form */}
-          <div className="hidden md:block bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Quick Schedule Appointment</h3>
+          <div className="bg-white rounded-lg shadow-md p-4 md:p-6">
+            <h3 className="text-base md:text-lg font-bold text-gray-900 mb-4">Quick Schedule Appointment</h3>
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Client</label>
