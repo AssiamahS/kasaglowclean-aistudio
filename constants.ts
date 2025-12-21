@@ -25,7 +25,7 @@ export const SERVICES: Service[] = [
     description: 'Keep your home consistently clean with our scheduled cleaning services. Weekly, bi-weekly, or monthly options available.',
     // FIX: Added 'duration' and 'reservationFee' to match the updated Service type.
     duration: 120,
-    reservationFee: 25,
+    reservationFee: 35,
   },
   {
     icon: SparklesIcon,
