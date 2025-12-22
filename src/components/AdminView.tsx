@@ -210,6 +210,18 @@ export default function AdminView() {
     description: '',
   });
 
+  // Appointment Modal
+  const [showAppointmentModal, setShowAppointmentModal] = useState(false);
+  const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
+  const [appointmentForm, setAppointmentForm] = useState({
+    clientId: '',
+    clientName: '',
+    service: '',
+    start: '',
+    end: '',
+    notes: '',
+  });
+
   // -----------------------------
   // HELPERS
   // -----------------------------
@@ -336,13 +348,12 @@ export default function AdminView() {
   }, [appointments]);
 
   const handleSelectEvent = useCallback((event: any) => {
-    // you can open a modal later; keep minimal now
-    // alert(event.title);
-  }, []);
+    openEditAppointment(event);
+  }, [openEditAppointment]);
 
   const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
-    // you can implement "create appt" here; keep minimal now
-  }, []);
+    openCreateAppointment(slotInfo.start, slotInfo.end);
+  }, [openCreateAppointment]);
 
   const handleEventDrop = useCallback(async ({ event, start, end }: any) => {
     try {
@@ -473,6 +484,66 @@ export default function AdminView() {
       alert(e?.message || 'Failed to delete job');
     }
   }, [loadJobs]);
+
+  // -----------------------------
+  // APPOINTMENTS CRUD
+  // -----------------------------
+  const openCreateAppointment = useCallback((start: Date, end: Date) => {
+    setEditingAppointment(null);
+    setAppointmentForm({
+      clientId: '',
+      clientName: '',
+      service: '',
+      start: start.toISOString(),
+      end: end.toISOString(),
+      notes: '',
+    });
+    setShowAppointmentModal(true);
+  }, []);
+
+  const openEditAppointment = useCallback((appt: Appointment) => {
+    setEditingAppointment(appt);
+    setAppointmentForm({
+      clientId: appt.clientId || '',
+      clientName: appt.clientName || '',
+      service: appt.title || '',
+      start: appt.start.toISOString(),
+      end: appt.end.toISOString(),
+      notes: '',
+    });
+    setShowAppointmentModal(true);
+  }, []);
+
+  const saveAppointment = useCallback(async () => {
+    const method = editingAppointment ? 'PUT' : 'POST';
+
+    await fetch('/api/appointments', {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(
+        editingAppointment
+          ? { id: editingAppointment.id, ...appointmentForm }
+          : appointmentForm
+      ),
+    });
+
+    setShowAppointmentModal(false);
+    setEditingAppointment(null);
+    loadAppointments();
+  }, [editingAppointment, appointmentForm, loadAppointments]);
+
+  const deleteAppointment = useCallback(async () => {
+    if (!editingAppointment) return;
+    if (!confirm('Delete this appointment?')) return;
+
+    await fetch(`/api/appointments?id=${editingAppointment.id}`, {
+      method: 'DELETE',
+    });
+
+    setShowAppointmentModal(false);
+    setEditingAppointment(null);
+    loadAppointments();
+  }, [editingAppointment, loadAppointments]);
 
   // -----------------------------
   // GUARD: LOGIN
@@ -908,6 +979,85 @@ export default function AdminView() {
             >
               {editingJob ? 'Update Job' : 'Create Job'}
             </button>
+          </div>
+        </ModalShell>
+      )}
+
+      {/* Appointment Modal */}
+      {showAppointmentModal && (
+        <ModalShell
+          title={editingAppointment ? 'Edit Appointment' : 'New Appointment'}
+          onClose={() => setShowAppointmentModal(false)}
+        >
+          <div className="space-y-3">
+            <input
+              placeholder="Client name"
+              value={appointmentForm.clientName}
+              onChange={(e) =>
+                setAppointmentForm((p) => ({ ...p, clientName: e.target.value }))
+              }
+              className="w-full px-3 py-2 border rounded"
+            />
+
+            <input
+              placeholder="Service"
+              value={appointmentForm.service}
+              onChange={(e) =>
+                setAppointmentForm((p) => ({ ...p, service: e.target.value }))
+              }
+              className="w-full px-3 py-2 border rounded"
+            />
+
+            <label className="text-sm font-semibold">Start</label>
+            <input
+              type="datetime-local"
+              value={appointmentForm.start.slice(0, 16)}
+              onChange={(e) =>
+                setAppointmentForm((p) => ({
+                  ...p,
+                  start: new Date(e.target.value).toISOString(),
+                }))
+              }
+              className="w-full px-3 py-2 border rounded"
+            />
+
+            <label className="text-sm font-semibold">End</label>
+            <input
+              type="datetime-local"
+              value={appointmentForm.end.slice(0, 16)}
+              onChange={(e) =>
+                setAppointmentForm((p) => ({
+                  ...p,
+                  end: new Date(e.target.value).toISOString(),
+                }))
+              }
+              className="w-full px-3 py-2 border rounded"
+            />
+
+            <textarea
+              placeholder="Notes (optional)"
+              value={appointmentForm.notes}
+              onChange={(e) =>
+                setAppointmentForm((p) => ({ ...p, notes: e.target.value }))
+              }
+              className="w-full px-3 py-2 border rounded"
+            />
+
+            <button
+              onClick={saveAppointment}
+              className="w-full px-4 py-2 bg-primary text-white rounded-lg"
+            >
+              Save Appointment
+            </button>
+
+            {editingAppointment && (
+              <button
+                onClick={deleteAppointment}
+                className="w-full px-4 py-2 bg-red-100 text-red-700 rounded-lg"
+              >
+                Delete Appointment
+              </button>
+            )}
           </div>
         </ModalShell>
       )}
