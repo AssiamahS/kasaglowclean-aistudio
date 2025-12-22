@@ -284,6 +284,32 @@ export default function AdminView() {
     loadAppointments();
   }, [loggedIn, loadSubmissions, loadClients, loadApplicants, loadJobs, loadAppointments]);
 
+  // Sync activePanel with scroll position (for swipe gestures)
+  useEffect(() => {
+    const slider = sliderRef.current;
+    if (!slider) return;
+
+    let raf = 0;
+
+    const onScroll = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const width = slider.clientWidth;
+        const index = Math.round(slider.scrollLeft / width);
+        const key = PANEL_ORDER[Math.min(PANEL_ORDER.length - 1, Math.max(0, index))];
+        setActivePanel(key);
+      });
+    };
+
+    slider.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
+    return () => {
+      slider.removeEventListener('scroll', onScroll);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
+
   // -----------------------------
   // CALENDAR DnD
   // -----------------------------
