@@ -1,7 +1,7 @@
 // API endpoints for appointment management (GET/POST/PUT/DELETE)
 // Includes email notifications via Resend when appointments are created/updated
 
-import { appointmentEmail, appointmentUpdateEmail } from '../../emails/appointment-confirmation';
+import { appointmentEmail, appointmentUpdateEmail } from '../../src/emails/appointment-confirmation.js';
 
 // GET - Fetch appointments for a date range
 export async function onRequestGet({ request, env }: any) {
