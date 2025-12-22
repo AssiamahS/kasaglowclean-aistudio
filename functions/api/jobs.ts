@@ -15,18 +15,18 @@ const FALLBACK_JOBS = [
 
 export async function onRequestGet(context: { request: Request; env: Env }) {
   try {
-    // Try to fetch from D1 jobs table
+    // Fetch from D1 jobs table - no fallback to show real DB state
     const res = await context.env.DB.prepare(`SELECT id, title, location, description, type, posted_at, active FROM jobs WHERE active = 1 ORDER BY posted_at DESC`).all();
-    const jobs = res?.results && res.results.length ? res.results : FALLBACK_JOBS;
+    const jobs = res?.results ?? [];
 
     return new Response(JSON.stringify({ ok: true, jobs }), {
       status: 200,
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
     });
   } catch (error) {
-    console.error('Error fetching jobs from DB, returning fallback', error);
-    return new Response(JSON.stringify({ ok: true, jobs: FALLBACK_JOBS }), {
-      status: 200,
+    console.error('Error fetching jobs from DB:', error);
+    return new Response(JSON.stringify({ ok: false, error: 'Database error', jobs: [] }), {
+      status: 500,
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
     });
   }
