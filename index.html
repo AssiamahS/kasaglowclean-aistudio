@@ -6,11 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
-      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://aistudiocdn.com https://www.paypal.com https://*.paypal.com https://www.paypalobjects.com;
-      style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://rsms.me;
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.paypal.com https://*.paypal.com https://www.paypalobjects.com https://static.cloudflareinsights.com;
+      style-src 'self' 'unsafe-inline' https://rsms.me;
       font-src 'self' https://rsms.me;
       img-src 'self' data: https:;
-      connect-src 'self' https://aistudiocdn.com https://www.paypal.com https://*.paypal.com https://api-m.sandbox.paypal.com https://api-m.paypal.com https://www.paypalobjects.com;
+      connect-src 'self' https://www.paypal.com https://*.paypal.com https://api-m.sandbox.paypal.com https://api-m.paypal.com https://www.paypalobjects.com https://static.cloudflareinsights.com https://cloudflareinsights.com;
       frame-src 'self' https://www.paypal.com https://*.paypal.com;
       child-src 'self' https://www.paypal.com https://*.paypal.com;
       form-action 'self' https://www.paypal.com https://*.paypal.com;
@@ -96,47 +96,10 @@
       ]
     }
     </script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              primary: '#0D9488', // Teal 600
-              'primary-focus': '#0F766E', // Teal 700
-              'primary-content': '#ffffff',
-              secondary: '#FACC15', // Yellow 400
-              'secondary-focus': '#EAB308', // Yellow 500
-              accent: '#38BDF8', // Sky 400
-              neutral: '#4B5563', // Gray 600
-              'base-100': '#FFFFFF', // White
-              'base-200': '#F9FAFB', // Gray 50
-              'base-300': '#F3F4F6', // Gray 100
-              info: '#2563EB',
-              success: '#16A34A',
-              warning: '#F59E0B',
-              error: '#DC2626',
-            },
-            fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-            },
-          },
-        },
-      }
-    </script>
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
-  <script type="importmap">
-{
-  "imports": {
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/"
-  }
-}
-</script>
 </head>
   <body class="bg-base-100 antialiased">
     <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
+<script type="module" src="/src/index.tsx"></script>
   </body>
 </html>

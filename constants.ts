@@ -167,7 +167,7 @@ export const LOCATIONS: Location[] = [
     image: '/images/atlantic-city-4020882_1280.jpg'
   },
   {
-    state: 'Philly',
+    state: 'NY / PA',
     cities: [],
     image: '/images/philly_skyline.jpg'
   }

@@ -34,3 +34,35 @@ CREATE TABLE IF NOT EXISTS jobs (
 );
 
 CREATE INDEX IF NOT EXISTS idx_jobs_active ON jobs(active);
+
+-- Clients table (Admin + Intake Form)
+CREATE TABLE IF NOT EXISTS clients (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  phone TEXT NOT NULL,
+  address TEXT,
+  city_state_zip TEXT,
+  tier TEXT DEFAULT 'New',
+  services TEXT,
+  frequency TEXT,
+  notes TEXT,
+  created_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_clients_email ON clients(email);
+
+-- Appointments table (Calendar + Booking)
+CREATE TABLE IF NOT EXISTS appointments (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  client_id INTEGER NOT NULL,
+  date_time TEXT NOT NULL,
+  service TEXT,
+  status TEXT DEFAULT 'scheduled',
+  notes TEXT,
+  created_at TEXT DEFAULT (datetime('now')),
+  FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_appointments_date ON appointments(date_time);
+CREATE INDEX IF NOT EXISTS idx_appointments_client ON appointments(client_id);
