@@ -1,5 +1,5 @@
 // Cloudflare Pages Function for handling lead form submissions
-import { estimateRequestEmail } from '../emails/estimate-email';
+import { estimateRequestEmail } from '../src/emails/estimate-email';
 
 interface Env {
   DB: D1Database;
