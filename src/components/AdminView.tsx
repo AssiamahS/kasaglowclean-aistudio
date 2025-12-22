@@ -171,6 +171,7 @@ export default function AdminView() {
   // -----------------------------
   const [activePanel, setActivePanel] = useState<AdminPanelKey>('clients');
 
+  const sliderRef = useRef<HTMLDivElement | null>(null);
   const panelRefs = useRef<Record<AdminPanelKey, HTMLElement | null>>({
     clients: null,
     applicants: null,
@@ -180,8 +181,16 @@ export default function AdminView() {
   });
 
   const scrollToPanel = useCallback((key: AdminPanelKey) => {
+    const slider = sliderRef.current;
+    const panel = panelRefs.current[key];
+    if (!slider || !panel) return;
+
+    slider.scrollTo({
+      left: panel.offsetLeft,
+      behavior: 'smooth',
+    });
+
     setActivePanel(key);
-    panelRefs.current[key]?.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
   }, []);
 
   // Add Customer Modal
@@ -414,7 +423,8 @@ export default function AdminView() {
 
         {/* HORIZONTAL SLIDER (one-page, swipeable) */}
         <div
-          className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth rounded-lg"
+          ref={sliderRef}
+          className="flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory scroll-smooth rounded-lg"
           style={{ WebkitOverflowScrolling: 'touch' }}
         >
           {/* CLIENTS */}
