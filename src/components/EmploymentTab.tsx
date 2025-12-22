@@ -17,10 +17,6 @@ type ApplicationSuccess = {
 };
 
 const EmploymentTab: React.FC = () => {
-  const LOCAL_FALLBACK_JOBS: Job[] = [
-    { id: 1, title: 'Residential Cleaner', location: 'Local', description: 'Provide cleaning services for residential customers. Must be reliable and experienced.', type: 'Part Time', posted_at: new Date().toISOString() },
-    { id: 2, title: 'Move-In / Move-Out Specialist', location: 'Local', description: 'Deep cleaning for moving homes. Attention to detail required.', type: 'Full Time', posted_at: new Date().toISOString() }
-  ];
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,37 +26,9 @@ const EmploymentTab: React.FC = () => {
   const [applicationSuccess, setApplicationSuccess] = useState<ApplicationSuccess | null>(null);
 
   useEffect(() => {
-    const load = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch('/api/jobs');
-        const ct = res.headers.get('content-type') || '';
-        if (!res.ok) {
-          // server returned a non-OK status; fall back to local demo jobs so the page is usable
-          setJobs(LOCAL_FALLBACK_JOBS);
-          setError(null);
-          return;
-        }
-        if (ct.includes('application/json')) {
-          const data = await res.json();
-          if (data?.ok && Array.isArray(data.jobs)) setJobs(data.jobs);
-          else {
-            setJobs(LOCAL_FALLBACK_JOBS);
-            setError(null);
-          }
-        } else {
-          // likely we're being served index.html (dev server) — fall back to local demo jobs silently
-          setJobs(LOCAL_FALLBACK_JOBS);
-          setError(null);
-        }
-      } catch (e) {
-        setError(String(e));
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
+    fetch('/api/jobs')
+      .then((r) => r.json())
+      .then((d) => setJobs(d.jobs ?? []));
   }, []);
 
   // only show jobs and allow applying; no filters
