@@ -246,15 +246,11 @@ const EmploymentTab: React.FC = () => {
         {/* Hero */}
         <div className="relative header-wrapper mb-10">
           <div
-            className="header bg-cover bg-center rounded-lg overflow-hidden"
+            className="header bg-gradient-to-r from-primary to-primary-dark rounded-lg overflow-hidden"
             style={{
-              // use a neutral cleaning services photo
-              backgroundImage:
-                "url('https://images.unsplash.com/photo-1581579184771-2fabe0f0b5c0?auto=format&fit=crop&w=1350&q=80')",
               minHeight: 220,
             }}
           >
-            <div className="color-overlay absolute inset-0 bg-black opacity-30" />
             <div className="relative z-10 p-8 md:p-12 text-white">
               <h1 className="text-3xl md:text-5xl font-extrabold">KasaGlow Careers</h1>
               <p className="mt-4 max-w-3xl">Join our KasaGlow team — we offer flexible schedules, competitive pay, and the tools to do your best work.</p>

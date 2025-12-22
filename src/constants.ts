@@ -55,7 +55,7 @@ export const SERVICES: Service[] = [
 
 export const FEATURE_SLIDES: FeatureSlide[] = [
   {
-    image: 'https://images.unsplash.com/photo-1600585152915-d208bec867a1?q=80&w=1972&auto=format&fit=crop',
+    image: '',
     video: '/videos/deep-cleaning.mp4',
     title: 'The KasaGlow Difference',
     subtitle: 'Exceptional Quality, Every Time',
@@ -67,7 +67,7 @@ export const FEATURE_SLIDES: FeatureSlide[] = [
     ]
   },
   {
-    image: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=1974&auto=format&fit=crop',
+    image: '',
     video: '/videos/hero-home-cleaning.mp4',
     title: 'We Love Your Furry Friends',
     subtitle: 'Pet-Friendly Cleaning Services',
@@ -79,7 +79,7 @@ export const FEATURE_SLIDES: FeatureSlide[] = [
     ]
   },
   {
-    image: 'https://images.unsplash.com/photo-1583501653320-27a0a283a553?q=80&w=2070&auto=format&fit=crop',
+    image: '',
     video: '/videos/garage-cleaning.mp4',
     title: 'Beyond the Living Room',
     subtitle: 'Garage & Outdoor Area Cleaning',
@@ -91,7 +91,7 @@ export const FEATURE_SLIDES: FeatureSlide[] = [
     ]
   },
    {
-    image: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=2070&auto=format&fit=crop',
+    image: '',
     video: '/videos/office-cleaning.mp4',
     title: 'Professional Spaces, Impeccable Results',
     subtitle: 'Corporate & Office Cleaning',
