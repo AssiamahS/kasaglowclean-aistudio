@@ -352,10 +352,16 @@ export default function AdminView() {
 
     setAddingCustomer(true);
     try {
-      const res = await fetch('/api/clients/create', {
+      const res = await fetch('/submit-lead', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...newCustomer, tier: 'New' }),
+        body: JSON.stringify({
+          name: newCustomer.name,
+          email: newCustomer.email,
+          phone: newCustomer.phone,
+          service: 'General Cleaning',
+          message: 'Created via Admin Panel',
+        }),
       });
 
       if (!res.ok) {
@@ -365,13 +371,13 @@ export default function AdminView() {
 
       setShowAddCustomer(false);
       setNewCustomer({ name: '', email: '', phone: '' });
-      loadClients();
+      loadSubmissions(); // IMPORTANT
     } catch (e: any) {
       alert(e?.message || 'Failed to create customer');
     } finally {
       setAddingCustomer(false);
     }
-  }, [newCustomer, loadClients]);
+  }, [newCustomer, loadSubmissions]);
 
   // -----------------------------
   // GUARD: LOGIN
