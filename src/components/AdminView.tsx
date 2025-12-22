@@ -43,12 +43,14 @@ interface JobApplicant {
 }
 
 interface Job {
-  id: string;
+  id: string | number;
   title: string;
   location: string;
   type: string;
   description?: string;
   createdAt?: string;
+  posted_at?: string;
+  active?: number;
 }
 
 interface Appointment {
