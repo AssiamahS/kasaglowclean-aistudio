@@ -198,6 +198,16 @@ export default function AdminView() {
   const [newCustomer, setNewCustomer] = useState({ name: '', email: '', phone: '' });
   const [addingCustomer, setAddingCustomer] = useState(false);
 
+  // Job Modal
+  const [showJobModal, setShowJobModal] = useState(false);
+  const [editingJob, setEditingJob] = useState<Job | null>(null);
+  const [jobForm, setJobForm] = useState({
+    title: '',
+    location: '',
+    type: '',
+    description: '',
+  });
+
   // -----------------------------
   // HELPERS
   // -----------------------------
@@ -249,7 +259,8 @@ export default function AdminView() {
     try {
       const res = await fetch('/api/jobs');
       const data = await res.json();
-      setJobs(Array.isArray(data) ? data : []);
+      // API returns { ok: true, jobs: [...] }
+      setJobs(Array.isArray(data.jobs) ? data.jobs : []);
     } catch {
       // swallow
     }
@@ -378,6 +389,88 @@ export default function AdminView() {
       setAddingCustomer(false);
     }
   }, [newCustomer, loadSubmissions]);
+
+  // -----------------------------
+  // JOB CRUD
+  // -----------------------------
+  const openNewJob = useCallback(() => {
+    setEditingJob(null);
+    setJobForm({ title: '', location: '', type: '', description: '' });
+    setShowJobModal(true);
+  }, []);
+
+  const openEditJob = useCallback((job: Job) => {
+    setEditingJob(job);
+    setJobForm({
+      title: job.title,
+      location: job.location,
+      type: job.type,
+      description: job.description || '',
+    });
+    setShowJobModal(true);
+  }, []);
+
+  const saveJob = useCallback(async () => {
+    if (!jobForm.title.trim()) {
+      alert('Title is required');
+      return;
+    }
+
+    const method = editingJob ? 'PUT' : 'POST';
+    const url = '/api/jobs_admin';
+    const adminSecret = sessionStorage.getItem('adminSecret') || 'password123';
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-secret': adminSecret,
+        },
+        body: JSON.stringify(
+          editingJob
+            ? { id: editingJob.id, ...jobForm }
+            : jobForm
+        ),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.error || 'Failed to save job');
+      }
+
+      setShowJobModal(false);
+      setEditingJob(null);
+      setJobForm({ title: '', location: '', type: '', description: '' });
+      loadJobs();
+    } catch (e: any) {
+      alert(e?.message || 'Failed to save job');
+    }
+  }, [editingJob, jobForm, loadJobs]);
+
+  const deleteJob = useCallback(async (id: string) => {
+    if (!confirm('Delete this job? This cannot be undone.')) return;
+
+    const adminSecret = sessionStorage.getItem('adminSecret') || 'password123';
+
+    try {
+      const res = await fetch(`/api/jobs_admin?id=${id}`, {
+        method: 'DELETE',
+        headers: {
+          'x-admin-secret': adminSecret,
+        },
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.error || 'Failed to delete job');
+      }
+
+      loadJobs();
+    } catch (e: any) {
+      alert(e?.message || 'Failed to delete job');
+    }
+  }, [loadJobs]);
 
   // -----------------------------
   // GUARD: LOGIN
@@ -592,6 +685,12 @@ export default function AdminView() {
               right={
                 <div className="flex gap-2">
                   <button
+                    onClick={openNewJob}
+                    className="px-4 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary-dark"
+                  >
+                    + Add Job
+                  </button>
+                  <button
                     onClick={loadJobs}
                     className="px-4 py-2 font-semibold rounded-lg border border-gray-300 hover:bg-gray-50"
                   >
@@ -617,6 +716,20 @@ export default function AdminView() {
                       {job.description && (
                         <p className="mt-3 text-sm text-gray-700 whitespace-pre-wrap">{job.description}</p>
                       )}
+                      <div className="flex gap-2 mt-3">
+                        <button
+                          onClick={() => openEditJob(job)}
+                          className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => deleteJob(job.id)}
+                          className="px-3 py-1 bg-red-100 text-red-700 rounded-lg hover:bg-red-200"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   ))
                 )}
@@ -734,6 +847,64 @@ export default function AdminView() {
               className="w-full px-4 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary-dark disabled:opacity-60"
             >
               {addingCustomer ? 'Adding...' : 'Create Customer'}
+            </button>
+          </div>
+        </ModalShell>
+      )}
+
+      {/* Job Modal */}
+      {showJobModal && (
+        <ModalShell
+          title={editingJob ? 'Edit Job' : 'New Job'}
+          onClose={() => setShowJobModal(false)}
+        >
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Title *</label>
+              <input
+                placeholder="e.g., Residential Cleaner"
+                value={jobForm.title}
+                onChange={(e) => setJobForm({ ...jobForm, title: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Location</label>
+              <input
+                placeholder="e.g., North Jersey"
+                value={jobForm.location}
+                onChange={(e) => setJobForm({ ...jobForm, location: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Type</label>
+              <input
+                placeholder="e.g., Full Time, Part Time, Contract"
+                value={jobForm.type}
+                onChange={(e) => setJobForm({ ...jobForm, type: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Description</label>
+              <textarea
+                placeholder="Job description and requirements..."
+                rows={4}
+                value={jobForm.description}
+                onChange={(e) => setJobForm({ ...jobForm, description: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            <button
+              onClick={saveJob}
+              className="w-full px-4 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary-dark"
+            >
+              {editingJob ? 'Update Job' : 'Create Job'}
             </button>
           </div>
         </ModalShell>
