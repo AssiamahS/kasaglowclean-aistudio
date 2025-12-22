@@ -347,14 +347,6 @@ export default function AdminView() {
     }));
   }, [appointments]);
 
-  const handleSelectEvent = useCallback((event: any) => {
-    openEditAppointment(event);
-  }, [openEditAppointment]);
-
-  const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
-    openCreateAppointment(slotInfo.start, slotInfo.end);
-  }, [openCreateAppointment]);
-
   const handleEventDrop = useCallback(async ({ event, start, end }: any) => {
     try {
       await fetch('/api/appointments', {
@@ -544,6 +536,15 @@ export default function AdminView() {
     setEditingAppointment(null);
     loadAppointments();
   }, [editingAppointment, loadAppointments]);
+
+  // Calendar event handlers (must be after CRUD functions)
+  const handleSelectEvent = useCallback((event: any) => {
+    openEditAppointment(event);
+  }, [openEditAppointment]);
+
+  const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
+    openCreateAppointment(slotInfo.start, slotInfo.end);
+  }, [openCreateAppointment]);
 
   // -----------------------------
   // GUARD: LOGIN

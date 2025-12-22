@@ -287,7 +287,6 @@ const EmploymentTab: React.FC = () => {
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                   <div>
                     <div className="text-lg font-semibold text-primary">{job.title}</div>
-                    <div className="text-sm text-gray-600">{job.location}</div>
                     {job.description && <div className="mt-2 text-sm text-gray-700">{job.description}</div>}
                   </div>
                   <div className="flex items-center gap-3">
