@@ -15,3 +15,7 @@ PAYPAL_ENV = "sandbox"
 STRIPE_PUBLIC_KEY = "pk_live_xxxxxxxxxx"
 RESEND_API_KEY = "re_Q6shyEbe_KBz6PPtKCUshy8z6B4jsk6V8"
 ADMIN_SECRET = "password123"
+
+[pages]
+functions = "./functions"
+build_output_dir = "./dist"
