@@ -2,6 +2,9 @@ name = "kasaglowclean-aistudio"
 compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
 
+# THE KEY SETTING - enables Pages Functions
+pages_build_output_dir = "dist"
+
 [[d1_databases]]
 binding = "DB"
 database_name = "kasaglow-submissions"
@@ -13,7 +16,3 @@ PAYPAL_ENV = "sandbox"
 STRIPE_PUBLIC_KEY = "pk_live_xxxxxxxxxx"
 RESEND_API_KEY = "re_Q6shyEbe_KBz6PPtKCUshy8z6B4jsk6V8"
 ADMIN_SECRET = "password123"
-
-[pages]
-functions = "./functions"
-build_output_dir = "./dist"
