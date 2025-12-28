@@ -1,5 +1,6 @@
 name = "kasaglowclean-aistudio"
 compatibility_date = "2024-01-01"
+main = "./_worker.js"
 
 # Cloudflare Pages build output folder
 pages_build_output_dir = "dist"
