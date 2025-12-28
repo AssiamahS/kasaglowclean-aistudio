@@ -1,7 +1,0 @@
-{
-  "version": 1,
-  "routes": [
-    { "pattern": "/*", "security": { "api": false } },
-    { "pattern": "/api/*", "security": { "api": true } }
-  ]
-}
