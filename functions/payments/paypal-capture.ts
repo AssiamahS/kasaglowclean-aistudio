@@ -1,4 +1,4 @@
-export const onRequestPost: PagesFunction = async ({ request, env }) => {
+export async function onRequestPost({ request, env }) {
   const url = new URL(request.url);
   const orderID = url.searchParams.get('orderID');
 
@@ -17,4 +17,4 @@ export const onRequestPost: PagesFunction = async ({ request, env }) => {
 
   const data = await response.json();
   return new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } });
-};
+}

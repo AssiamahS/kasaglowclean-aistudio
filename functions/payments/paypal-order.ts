@@ -1,3 +1,5 @@
+import type { PagesFunction } from '@cloudflare/workers-types';
+
 export const onRequestPost: PagesFunction = async ({ env }) => {
   const auth = Buffer.from(env.PAYPAL_CLIENT_ID + ':' + env.PAYPAL_SECRET).toString('base64');
 

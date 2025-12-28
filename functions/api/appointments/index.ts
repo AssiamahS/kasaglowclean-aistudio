@@ -72,7 +72,7 @@ export async function onRequestPost({ request, env }: any) {
             subject: 'Appointment Confirmation - KasaGlow Cleaning',
             html: `
               <h2>Appointment Confirmed</h2>
-              <p>Hello ${clientName},</p>
+              <p>Hello,</p>
               <p>Your cleaning appointment has been scheduled for <strong>${new Date(dateTime).toLocaleString()}</strong>.</p>
               <p><strong>Service:</strong> ${service || 'Cleaning'}</p>
               ${notes ? `<p><strong>Notes:</strong> ${notes}</p>` : ''}

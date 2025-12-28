@@ -1,4 +1,5 @@
 import Stripe from 'stripe';
+import type { PagesFunction } from '@cloudflare/workers-types';
 
 export const onRequestPost: PagesFunction = async ({ env }) => {
   const stripe = new Stripe(env.STRIPE_SECRET_KEY);
