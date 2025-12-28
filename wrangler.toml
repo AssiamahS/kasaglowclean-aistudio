@@ -1,21 +1,16 @@
 name = "kasaglowclean-aistudio"
-main = "_worker.js"
-compatibility_date = "2024-01-01"
-
-# Cloudflare Pages build output folder
 pages_build_output_dir = "dist"
 
-# Tell Cloudflare where Functions live
-[functions]
-directory = "functions"
+compatibility_date = "2024-01-01"
 
-# D1 Database binding
+[compatibility_flags]
+nodejs_compat = true
+
 [[d1_databases]]
 binding = "DB"
 database_name = "kasaglow-submissions"
 database_id = "4b729739-978c-41ac-af74-7ad8df3b943d"
 
-# Environment variables
 [vars]
 SITE_URL = "https://kasaglowclean.com"
 PAYPAL_ENV = "sandbox"
