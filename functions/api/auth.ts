@@ -8,7 +8,7 @@ export async function onRequestGet(context) {
   const REDIRECT_URI = `${env.SITE_URL || 'https://kasaglowclean.com'}/api/auth/callback`;
 
   // 1) STATUS: is Google linked?
-  if (pathname.endsWith('/status')) {
+  if (pathname === '/api/auth/status' || pathname.endsWith('/status')) {
     try {
       const row = await env.DB.prepare(
         "SELECT value FROM admin_settings WHERE key = 'google_refresh_token'"
@@ -22,7 +22,7 @@ export async function onRequestGet(context) {
   }
 
   // 2) START: redirect to Google "Continue with Google"
-  if (pathname.endsWith('/start')) {
+  if (pathname === '/api/auth/start' || pathname.endsWith('/start')) {
     const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
     authUrl.searchParams.set("client_id", env.GOOGLE_CLIENT_ID);
     authUrl.searchParams.set("redirect_uri", REDIRECT_URI);
@@ -35,7 +35,7 @@ export async function onRequestGet(context) {
   }
 
   // 3) CALLBACK: Google sends ?code=...
-  if (pathname.endsWith('/callback')) {
+  if (pathname === '/api/auth/callback' || pathname.endsWith('/callback')) {
     const code = url.searchParams.get('code');
 
     if (!code) {
@@ -91,7 +91,7 @@ export async function onRequestGet(context) {
   }
 
   // 4) UNLINK: remove refresh token
-  if (pathname.endsWith('/unlink')) {
+  if (pathname === '/api/auth/unlink' || pathname.endsWith('/unlink')) {
     try {
       await env.DB.prepare(
         "DELETE FROM admin_settings WHERE key = 'google_refresh_token'"
