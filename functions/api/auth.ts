@@ -1,7 +1,10 @@
 // functions/api/auth.ts
 // Google OAuth bridge for KasaGlow admin calendar sync
 
-export async function onRequest({ request, env }: any): Promise<Response> {
+import type { PagesFunction } from '@cloudflare/workers-types';
+
+export const onRequestGet: PagesFunction = async (context) => {
+  const { request, env } = context;
   const url = new URL(request.url);
   const pathname = url.pathname;
   const REDIRECT_URI = `${env.SITE_URL || 'https://kasaglowclean.com'}/api/auth/callback`;
@@ -104,4 +107,8 @@ export async function onRequest({ request, env }: any): Promise<Response> {
   }
 
   return new Response('Not found', { status: 404 });
-}
+};
+
+// Safeguard against POST/PUT/DELETE requests
+export const onRequestPost: PagesFunction = async () =>
+  new Response("Method Not Allowed", { status: 405 });
