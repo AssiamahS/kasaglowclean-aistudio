@@ -1,16 +1,13 @@
-// Cloudflare Pages routing override
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
-    // Route /api/* → Functions
+    // Route API requests to Functions runtime
     if (url.pathname.startsWith("/api/")) {
-      return env.__STATIC_CONTENT
-        ? env.ASSETS.fetch(request)
-        : fetch(request);
+      return fetch(request);
     }
 
-    // All other paths → Serve SPA
+    // Everything else served from SPA
     return env.ASSETS.fetch(request);
   },
 };
