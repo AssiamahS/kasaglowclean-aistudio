@@ -22,17 +22,15 @@ export async function onRequest({ request, env }: any): Promise<Response> {
 
   // 2) START: redirect to Google "Continue with Google"
   if (pathname.endsWith('/start')) {
-    const params = new URLSearchParams({
-      client_id: env.GOOGLE_CLIENT_ID,
-      redirect_uri: REDIRECT_URI,
-      response_type: 'code',
-      scope: 'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/userinfo.email',
-      access_type: 'offline',
-      prompt: 'consent',
-    });
+    const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+    authUrl.searchParams.set("client_id", env.GOOGLE_CLIENT_ID);
+    authUrl.searchParams.set("redirect_uri", REDIRECT_URI);
+    authUrl.searchParams.set("response_type", "code");
+    authUrl.searchParams.set("scope", "https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events");
+    authUrl.searchParams.set("access_type", "offline");
+    authUrl.searchParams.set("prompt", "consent");
 
-    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
-    return Response.redirect(authUrl, 302);
+    return Response.redirect(authUrl.toString(), 302);
   }
 
   // 3) CALLBACK: Google sends ?code=...
