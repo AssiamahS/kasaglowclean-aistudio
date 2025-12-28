@@ -172,6 +172,7 @@ export default function AdminView() {
   // UI STATE
   // -----------------------------
   const [activePanel, setActivePanel] = useState<AdminPanelKey>('clients');
+  const [isGoogleLinked, setIsGoogleLinked] = useState(false);
 
   const sliderRef = useRef<HTMLDivElement | null>(null);
   const panelRefs = useRef<Record<AdminPanelKey, HTMLElement | null>>({
@@ -333,6 +334,20 @@ export default function AdminView() {
       slider.removeEventListener('scroll', onScroll);
       cancelAnimationFrame(raf);
     };
+  }, []);
+
+  // Check Google Calendar link status for "green light"
+  useEffect(() => {
+    fetch('/api/auth/status')
+      .then((res) => (res.ok ? res.json() : { linked: false }))
+      .then((data) => {
+        if (typeof data?.linked === 'boolean') {
+          setIsGoogleLinked(data.linked);
+        }
+      })
+      .catch(() => {
+        setIsGoogleLinked(false);
+      });
   }, []);
 
   // -----------------------------
@@ -624,7 +639,10 @@ export default function AdminView() {
         <div
           ref={sliderRef}
           className="flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory scroll-smooth rounded-lg"
-          style={{ WebkitOverflowScrolling: 'touch' }}
+          style={{
+            WebkitOverflowScrolling: 'touch',
+            height: 'calc(100vh - 160px)', // Locks content height cleanly on iPhone
+          }}
         >
           {/* CLIENTS */}
           <div
@@ -821,12 +839,47 @@ export default function AdminView() {
             <PanelShell
               title="Appointment Calendar"
               right={
-                <button
-                  onClick={loadAppointments}
-                  className="px-4 py-2 font-semibold rounded-lg border border-gray-300 hover:bg-gray-50"
-                >
-                  Reload
-                </button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={loadAppointments}
+                    className="px-4 py-2 font-semibold rounded-lg border border-gray-300 hover:bg-gray-50"
+                  >
+                    Reload
+                  </button>
+
+                  {isGoogleLinked ? (
+                    <div className="flex items-center gap-2 bg-green-50 border border-green-200 px-3 py-1 rounded-full">
+                      <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                      <span className="text-xs font-semibold text-green-700">
+                        Google Synced
+                      </span>
+                      <button
+                        onClick={() =>
+                          fetch('/api/auth/unlink', { method: 'POST' })
+                            .then(() => setIsGoogleLinked(false))
+                            .catch(() => setIsGoogleLinked(false))
+                        }
+                        className="text-[10px] text-gray-500 underline ml-1"
+                      >
+                        Unlink
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        window.location.href = '/api/auth/start';
+                      }}
+                      className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-xs font-semibold hover:bg-gray-50 flex items-center gap-2"
+                    >
+                      <img
+                        src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png"
+                        alt="Google"
+                        className="w-4 h-4"
+                      />
+                      <span>Continue with Google</span>
+                    </button>
+                  )}
+                </div>
               }
             >
               {/* Calendar containment: keeps DnD usable on mobile */}

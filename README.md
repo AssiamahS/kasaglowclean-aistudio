@@ -49,16 +49,17 @@ Professional cleaning services website with admin panel for managing customer in
 
 See [DEPLOYMENT.md](./DEPLOYMENT.md) for complete deployment instructions to Cloudflare Pages.
 
-## Important - Large Video Files
+## Video Files
 
-⚠️ The `public/videos/` folder contains large video files that **WILL FAIL** when pushing to GitHub:
-- `garage-cleaning.mov` (104MB) - **TOO LARGE FOR GITHUB (100MB limit)**
-- `hero-home-cleaning.mov` (72MB) - **WARNING**
+The `public/videos/` folder contains compressed video files optimized for web delivery:
+- `garage-cleaning.mp4` (140KB)
+- `hero-home-cleaning.mp4` (8MB)
+- `deep-cleaning.mp4` (1.9MB)
+- `office-cleaning.mp4` (22MB)
+- `vacuum-cleaning.mp4` (666KB)
+- `garage-cleaning-compressed.mp4` (267KB)
 
-**Before pushing to GitHub, either**:
-1. Remove large videos: `rm public/videos/*.mov`
-2. Use Git LFS: `git lfs track "*.mov"`
-3. Host videos externally (YouTube/Vimeo)
+All videos are in `.mp4` format and safe for GitHub push (under 100MB limit).
 
 ## Project Structure
 

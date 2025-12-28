@@ -60,9 +60,16 @@ CREATE TABLE IF NOT EXISTS appointments (
   service TEXT,
   status TEXT DEFAULT 'scheduled',
   notes TEXT,
+  googleEventId TEXT,
   created_at TEXT DEFAULT (datetime('now')),
   FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_appointments_date ON appointments(date_time);
 CREATE INDEX IF NOT EXISTS idx_appointments_client ON appointments(client_id);
+
+-- Admin settings table for Google Calendar integration
+CREATE TABLE IF NOT EXISTS admin_settings (
+  key   TEXT PRIMARY KEY,
+  value TEXT
+);
