@@ -1,5 +1,11 @@
 {
   "version": 1,
   "include": ["/*"],
-  "exclude": ["/api/*", "/submit-lead", "/payments/*"]
+  "exclude": [
+    "/assets/*",
+    "/*.png",
+    "/*.jpg",
+    "/*.svg",
+    "/*.ico"
+  ]
 }

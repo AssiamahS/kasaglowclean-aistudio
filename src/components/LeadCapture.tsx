@@ -28,6 +28,7 @@ const LeadCapture: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
   const [formData, setFormData] = useState<any>(null);
+  const [clientId, setClientId] = useState<number | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -55,6 +56,10 @@ const LeadCapture: React.FC = () => {
       const result = await response.json();
 
       if (response.ok) {
+        // Store the clientId returned from the API
+        if (result.clientId) {
+          setClientId(result.clientId);
+        }
         setShowCalendar(true);
         setStatus('✅ Great! Now select your preferred date and time.');
       } else {
@@ -71,21 +76,15 @@ const LeadCapture: React.FC = () => {
     if (!formData) return;
 
     try {
-      // Get the stored submission to find the clientId
-      const stored = localStorage.getItem('leadSubmissions');
-      const submissions = stored ? JSON.parse(stored) : [];
-      const clientSubmission = submissions.find((s: any) =>
-        s.email === formData.email && s.name === formData.name
-      );
-
-      const clientId = clientSubmission ? `local-${clientSubmission.id}` : `local-${Date.now()}`;
+      // Use the clientId from the lead submission
+      const appointmentClientId = clientId || `guest-${Date.now()}`;
 
       // Save appointment to database
       await fetch('/api/appointments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          clientId: clientId,
+          clientId: appointmentClientId,
           dateTime: dateTime.toISOString(),
           service: formData.service,
           notes: formData.message || ''

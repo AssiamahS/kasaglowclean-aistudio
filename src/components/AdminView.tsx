@@ -162,6 +162,7 @@ export default function AdminView() {
   // -----------------------------
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [selectedSubmission, setSelectedSubmission] = useState<Submission | null>(null);
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
 
   const [clients, setClients] = useState<Client[]>([]);
   const [allApplicants, setAllApplicants] = useState<JobApplicant[]>([]);
@@ -185,11 +186,14 @@ export default function AdminView() {
 
   const scrollToPanel = useCallback((key: AdminPanelKey) => {
     const slider = sliderRef.current;
-    const panel = panelRefs.current[key];
-    if (!slider || !panel) return;
+    if (!slider) return;
+
+    // Calculate position based on panel index for reliability
+    const panelIndex = PANEL_ORDER.indexOf(key);
+    const scrollPosition = panelIndex * slider.clientWidth;
 
     slider.scrollTo({
-      left: panel.offsetLeft,
+      left: scrollPosition,
       behavior: 'smooth',
     });
 
@@ -383,32 +387,36 @@ export default function AdminView() {
 
     setAddingCustomer(true);
     try {
-      const res = await fetch('/submit-lead', {
+      const res = await fetch('/api/clients/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: newCustomer.name,
           email: newCustomer.email,
           phone: newCustomer.phone,
-          service: 'General Cleaning',
-          message: 'Created via Admin Panel',
+          tier: 'Manual',
         }),
       });
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data?.error || 'Failed to create customer');
+        throw new Error(data?.error || 'Failed to create client');
       }
 
       setShowAddCustomer(false);
       setNewCustomer({ name: '', email: '', phone: '' });
-      loadSubmissions(); // IMPORTANT
+
+      // 🔑 CRITICAL: refresh both data buckets
+      await Promise.all([
+        loadClients(),      // real clients
+        loadSubmissions(),  // historical intake / audit trail
+      ]);
     } catch (e: any) {
       alert(e?.message || 'Failed to create customer');
     } finally {
       setAddingCustomer(false);
     }
-  }, [newCustomer, loadSubmissions]);
+  }, [newCustomer, loadClients, loadSubmissions]);
 
   // -----------------------------
   // JOB CRUD
@@ -607,7 +615,7 @@ export default function AdminView() {
 
                 const count =
                   key === 'clients'
-                    ? submissionClients.length
+                    ? clients.length
                     : key === 'applicants'
                     ? submissionApplicants.length
                     : key === 'jobs'
@@ -638,10 +646,11 @@ export default function AdminView() {
         {/* HORIZONTAL SLIDER (one-page, swipeable) */}
         <div
           ref={sliderRef}
-          className="flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory scroll-smooth rounded-lg"
+          className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth rounded-lg"
           style={{
             WebkitOverflowScrolling: 'touch',
-            height: 'calc(100vh - 160px)', // Locks content height cleanly on iPhone
+            height: 'calc(100dvh - 180px)', // Use dvh for mobile viewport, extra padding for safety
+            minHeight: '500px',
           }}
         >
           {/* CLIENTS */}
@@ -649,7 +658,7 @@ export default function AdminView() {
             ref={(el) => {
               panelRefs.current.clients = el;
             }}
-            className="min-w-full snap-start px-1"
+            className="min-w-full snap-start px-1 overflow-y-auto"
           >
             <PanelShell
               title="Clients"
@@ -664,68 +673,68 @@ export default function AdminView() {
             >
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <div className="space-y-3">
-                  {submissionClients.length === 0 ? (
-                    <div className="text-gray-500 text-center py-8">No client submissions found.</div>
+                  {clients.length === 0 ? (
+                    <div className="text-gray-500 text-center py-8">No clients found.</div>
                   ) : (
-                    submissionClients.map((s) => (
+                    clients.map((c) => (
                       <button
-                        key={s.id}
-                        onClick={() => setSelectedSubmission(s)}
+                        key={c.id}
+                        onClick={() => setSelectedClient(c)}
                         className={`w-full text-left bg-gray-50 rounded-lg p-4 border hover:bg-gray-100 transition ${
-                          selectedSubmission?.id === s.id ? 'ring-2 ring-primary' : ''
+                          selectedClient?.id === c.id ? 'ring-2 ring-primary' : ''
                         }`}
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div>
                             <div className="flex items-center gap-2">
                               <UserIcon className="h-4 w-4 text-gray-400" />
-                              <span className="font-semibold text-gray-900">{s.name}</span>
+                              <span className="font-semibold text-gray-900">{c.name}</span>
                             </div>
                             <div className="mt-1 text-sm text-gray-600 flex items-center gap-2">
                               <MailIcon className="h-4 w-4 text-gray-400" />
-                              {s.email}
+                              {c.email}
                             </div>
-                            <div className="mt-1 text-sm text-gray-600 flex items-center gap-2">
-                              <PhoneIcon className="h-4 w-4 text-gray-400" />
-                              {s.phone}
-                            </div>
+                            {c.phone && (
+                              <div className="mt-1 text-sm text-gray-600 flex items-center gap-2">
+                                <PhoneIcon className="h-4 w-4 text-gray-400" />
+                                {c.phone}
+                              </div>
+                            )}
                           </div>
-                          <span className="text-xs text-gray-500">{new Date(s.timestamp).toLocaleDateString()}</span>
+                          <span className={`text-xs px-2 py-1 rounded-full ${
+                            c.tier === 'New' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                          }`}>{c.tier || 'New'}</span>
                         </div>
-                        <div className="mt-2 text-sm font-semibold text-primary">Service: {s.service}</div>
                       </button>
                     ))
                   )}
                 </div>
 
                 <div className="lg:sticky lg:top-24 h-fit">
-                  {selectedSubmission ? (
+                  {selectedClient ? (
                     <div className="bg-white rounded-lg border p-4 sm:p-6">
                       <div className="flex items-start justify-between gap-3">
-                        <h3 className="text-lg font-bold text-gray-900">Submission Details</h3>
+                        <h3 className="text-lg font-bold text-gray-900">Client Details</h3>
                         <button
-                          onClick={() => setSelectedSubmission(null)}
+                          onClick={() => setSelectedClient(null)}
                           className="px-3 py-1 rounded-md border border-gray-300 hover:bg-gray-50"
                         >
                           Clear
                         </button>
                       </div>
                       <div className="mt-3 space-y-2 text-sm text-gray-700">
-                        <div><span className="font-semibold">Name:</span> {selectedSubmission.name}</div>
-                        <div><span className="font-semibold">Email:</span> {selectedSubmission.email}</div>
-                        <div><span className="font-semibold">Phone:</span> {selectedSubmission.phone}</div>
-                        <div><span className="font-semibold">Service:</span> {selectedSubmission.service}</div>
-                        {selectedSubmission.message && (
-                          <div className="pt-2">
-                            <div className="font-semibold">Message:</div>
-                            <div className="text-gray-600 whitespace-pre-wrap">{selectedSubmission.message}</div>
-                          </div>
+                        <div><span className="font-semibold">Name:</span> {selectedClient.name}</div>
+                        <div><span className="font-semibold">Email:</span> {selectedClient.email}</div>
+                        {selectedClient.phone && <div><span className="font-semibold">Phone:</span> {selectedClient.phone}</div>}
+                        <div><span className="font-semibold">Tier:</span> {selectedClient.tier || 'New'}</div>
+                        {selectedClient.createdAt && (
+                          <div><span className="font-semibold">Added:</span> {new Date(selectedClient.createdAt).toLocaleDateString()}</div>
                         )}
                       </div>
                     </div>
                   ) : (
                     <div className="bg-white rounded-lg border p-6 text-center text-gray-500">
-                      Select a client submission to view details.
+                      Select a client to view details.
                     </div>
                   )}
                 </div>
@@ -738,7 +747,7 @@ export default function AdminView() {
             ref={(el) => {
               panelRefs.current.applicants = el;
             }}
-            className="min-w-full snap-start px-1"
+            className="min-w-full snap-start px-1 overflow-y-auto"
           >
             <PanelShell title="Job Applicants">
               <div className="space-y-3">
@@ -770,7 +779,7 @@ export default function AdminView() {
             ref={(el) => {
               panelRefs.current.jobs = el;
             }}
-            className="min-w-full snap-start px-1"
+            className="min-w-full snap-start px-1 overflow-y-auto"
           >
             <PanelShell
               title="Jobs"
@@ -834,7 +843,7 @@ export default function AdminView() {
             ref={(el) => {
               panelRefs.current.calendar = el;
             }}
-            className="min-w-full snap-start px-1"
+            className="min-w-full snap-start px-1 overflow-y-auto"
           >
             <PanelShell
               title="Appointment Calendar"
@@ -884,7 +893,7 @@ export default function AdminView() {
             >
               {/* Calendar containment: keeps DnD usable on mobile */}
               <div className="rounded-lg border bg-white">
-                <div className="h-[70vh] min-h-[520px]">
+                <div className="h-[60dvh] min-h-[400px] max-h-[600px]">
                   <div className="h-full w-full overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
                     {/* Inner min-width keeps week view usable */}
                     <div className="min-w-[900px] h-full">
@@ -922,7 +931,7 @@ export default function AdminView() {
             ref={(el) => {
               panelRefs.current.forms = el;
             }}
-            className="min-w-full snap-start px-1"
+            className="min-w-full snap-start px-1 overflow-y-auto"
           >
             <PanelShell title="Forms">
               {/* Standardized width so it matches other panels */}

@@ -99,7 +99,7 @@ export async function onRequestPost(context: { request: Request; env: Env }) {
       );
     }
 
-    // Save to D1 database
+    // Save to D1 database (submissions table for audit trail)
     try {
       await context.env.DB.prepare(
         `INSERT INTO submissions (name, email, phone, service, message, timestamp, read)
@@ -125,6 +125,48 @@ export async function onRequestPost(context: { request: Request; env: Env }) {
           }
         }
       );
+    }
+
+    // Also create a client record for CRUD management
+    let clientId: number | null = null;
+    try {
+      // Check if client with this email already exists
+      const existing = await context.env.DB.prepare(
+        `SELECT id FROM clients WHERE email = ?`
+      ).bind(data.email).first() as { id: number } | null;
+
+      if (!existing) {
+        // Create new client record
+        const result = await context.env.DB.prepare(
+          `INSERT INTO clients (name, email, phone, services, tier, notes, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, datetime('now'))`
+        ).bind(
+          data.name,
+          data.email,
+          data.phone || '',
+          data.service || '',
+          'New',
+          data.message || ''
+        ).run();
+
+        // Get the inserted client ID
+        clientId = result.meta?.last_row_id || null;
+      } else {
+        // Update existing client with latest info
+        await context.env.DB.prepare(
+          `UPDATE clients SET name = ?, phone = ?, services = ?, notes = ? WHERE email = ?`
+        ).bind(
+          data.name,
+          data.phone || '',
+          data.service || '',
+          data.message || '',
+          data.email
+        ).run();
+        clientId = existing.id;
+      }
+    } catch (clientDbError) {
+      // Log but don't fail - submissions table is the primary record
+      console.error('Client record error (non-fatal):', clientDbError);
     }
 
     // Optionally send email notification via Resend
@@ -162,7 +204,7 @@ export async function onRequestPost(context: { request: Request; env: Env }) {
     );
 
     return new Response(
-      JSON.stringify({ ok: true, message: 'Lead submitted successfully' }),
+      JSON.stringify({ ok: true, message: 'Lead submitted successfully', clientId }),
       {
         status: 200,
         headers: {
