@@ -205,6 +205,9 @@ export default function AdminView() {
   const [newCustomer, setNewCustomer] = useState({ name: '', email: '', phone: '' });
   const [addingCustomer, setAddingCustomer] = useState(false);
 
+  // Delete Client
+  const [deletingClient, setDeletingClient] = useState(false);
+
   // Job Modal
   const [showJobModal, setShowJobModal] = useState(false);
   const [editingJob, setEditingJob] = useState<Job | null>(null);
@@ -417,6 +420,37 @@ export default function AdminView() {
       setAddingCustomer(false);
     }
   }, [newCustomer, loadClients, loadSubmissions]);
+
+  // -----------------------------
+  // DELETE CLIENT
+  // -----------------------------
+  const deleteClient = useCallback(async () => {
+    if (!selectedClient) return;
+
+    const ok = window.confirm(
+      `Delete ${selectedClient.name}?\n\nThis cannot be undone.`
+    );
+    if (!ok) return;
+
+    setDeletingClient(true);
+    try {
+      const res = await fetch(`/api/clients?id=${selectedClient.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.error || 'Failed to delete client');
+      }
+
+      setClients((prev) => prev.filter((c) => c.id !== selectedClient.id));
+      setSelectedClient(null);
+    } catch (e: any) {
+      alert(e?.message || 'Failed to delete client');
+    } finally {
+      setDeletingClient(false);
+    }
+  }, [selectedClient]);
 
   // -----------------------------
   // JOB CRUD
@@ -715,12 +749,22 @@ export default function AdminView() {
                     <div className="bg-white rounded-lg border p-4 sm:p-6">
                       <div className="flex items-start justify-between gap-3">
                         <h3 className="text-lg font-bold text-gray-900">Client Details</h3>
-                        <button
-                          onClick={() => setSelectedClient(null)}
-                          className="px-3 py-1 rounded-md border border-gray-300 hover:bg-gray-50"
-                        >
-                          Clear
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => setSelectedClient(null)}
+                            className="px-3 py-1 rounded-md border border-gray-300 hover:bg-gray-50"
+                          >
+                            Clear
+                          </button>
+
+                          <button
+                            onClick={deleteClient}
+                            disabled={deletingClient}
+                            className="px-3 py-1 rounded-md border border-red-300 text-red-700 hover:bg-red-50 disabled:opacity-60"
+                          >
+                            {deletingClient ? 'Deleting…' : 'Delete'}
+                          </button>
+                        </div>
                       </div>
                       <div className="mt-3 space-y-2 text-sm text-gray-700">
                         <div><span className="font-semibold">Name:</span> {selectedClient.name}</div>
@@ -825,7 +869,7 @@ export default function AdminView() {
                           Edit
                         </button>
                         <button
-                          onClick={() => deleteJob(job.id)}
+                          onClick={() => deleteJob(String(job.id))}
                           className="px-3 py-1 bg-red-100 text-red-700 rounded-lg hover:bg-red-200"
                         >
                           Delete
@@ -936,7 +980,7 @@ export default function AdminView() {
             <PanelShell title="Forms">
               {/* Standardized width so it matches other panels */}
               <div className="w-full max-w-xl mx-auto">
-                <ClientIntakeForm clients={clients as any} loadClients={loadClients} />
+                <ClientIntakeForm />
               </div>
             </PanelShell>
           </div>
