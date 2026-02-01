@@ -46,21 +46,30 @@ export async function onRequestGet({ request, env }: any) {
     const end = url.searchParams.get("end");
 
     let query = `
-      SELECT a.*, c.name AS clientName, c.email AS clientEmail
+      SELECT
+        a.id,
+        a.client_id,
+        a.date_time,
+        a.service,
+        a.status,
+        a.notes,
+        a.googleEventId,
+        c.name AS clientName,
+        c.email AS clientEmail
       FROM appointments a
-      JOIN clients c ON a.clientId = c.id
+      LEFT JOIN clients c ON a.client_id = c.id
       WHERE 1=1
     `;
     const binds: any[] = [];
 
-    if (start) { query += " AND a.dateTime >= ?"; binds.push(start); }
-    if (end) { query += " AND a.dateTime <= ?"; binds.push(end); }
+    if (start) { query += " AND a.date_time >= ?"; binds.push(start); }
+    if (end) { query += " AND a.date_time <= ?"; binds.push(end); }
 
-    query += " ORDER BY a.dateTime ASC";
+    query += " ORDER BY a.date_time ASC";
 
     const result = await env.DB.prepare(query).bind(...binds).all();
 
-    return new Response(JSON.stringify(result.results || []), {
+    return new Response(JSON.stringify(result.results ?? []), {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err: any) {
@@ -78,7 +87,7 @@ export async function onRequestPost({ request, env }: any) {
     const { clientId, dateTime, service, notes } = await request.json();
 
     const stmt = await env.DB.prepare(`
-      INSERT INTO appointments (clientId, dateTime, service, notes, createdAt, updatedAt)
+      INSERT INTO appointments (client_id, date_time, service, notes, created_at, updated_at)
       VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))
     `).bind(clientId, dateTime, service || '', notes || '').run();
 
@@ -176,7 +185,7 @@ export async function onRequestPut({ request, env }: any) {
 
     await env.DB.prepare(`
       UPDATE appointments
-      SET dateTime = ?, service = ?, status = ?, notes = ?, updatedAt = datetime('now')
+      SET date_time = ?, service = ?, status = ?, notes = ?, updated_at = datetime('now')
       WHERE id = ?
     `).bind(dateTime, service || '', status || 'upcoming', notes || '', id).run();
 
@@ -186,7 +195,7 @@ export async function onRequestPut({ request, env }: any) {
         const appointment = await env.DB.prepare(`
           SELECT c.email, c.name, a.service
           FROM appointments a
-          JOIN clients c ON a.clientId = c.id
+          LEFT JOIN clients c ON a.client_id = c.id
           WHERE a.id = ?
         `).bind(id).first();
 
@@ -222,15 +231,15 @@ export async function onRequestPut({ request, env }: any) {
       const accessToken = await getGoogleAccessToken(env);
       if (accessToken) {
         const row = await env.DB.prepare(
-          `SELECT a.googleEventId, a.dateTime, a.service, c.name, c.email
+          `SELECT a.googleEventId, a.date_time, a.service, c.name, c.email
            FROM appointments a
-           JOIN clients c ON a.clientId = c.id
+           LEFT JOIN clients c ON a.client_id = c.id
            WHERE a.id = ?`
         ).bind(id).first();
 
         if (row && row.googleEventId) {
-          const startIso = new Date(row.dateTime || dateTime).toISOString();
-          const endIso = new Date(new Date(row.dateTime || dateTime).getTime() + 2 * 60 * 60 * 1000).toISOString();
+          const startIso = new Date(row.date_time || dateTime).toISOString();
+          const endIso = new Date(new Date(row.date_time || dateTime).getTime() + 2 * 60 * 60 * 1000).toISOString();
 
           const eventBody = {
             summary: `🧹 KasaGlow: ${service || row.service || 'Cleaning Service'}`,
