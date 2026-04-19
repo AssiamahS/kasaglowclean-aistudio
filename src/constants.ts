@@ -1,10 +1,9 @@
 import type { Service, Feature, ProcessStep, Testimonial, FeatureSlide, Location } from './types';
 import {
   SparklesIcon, HomeIcon, BuildingOfficeIcon, TruckIcon,
-  // FIX: Removed 'GiftIcon' as it is not exported from IconComponents.
   ShieldCheckIcon, ThumbUpIcon, UsersIcon,
   PhoneArrowUpRightIcon, CalendarDaysIcon, CheckBadgeIcon,
-  HeartIcon, LockClosedIcon, CheckCircleIcon, MapPinIcon
+  HeartIcon, LockClosedIcon, CheckCircleIcon
 } from './components/IconComponents';
 
 // FIX: Added BUSINESS_HOURS constant required by CalendarBooking component.

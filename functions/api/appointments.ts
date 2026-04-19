@@ -3,40 +3,11 @@
 // Includes email notifications via Resend AND Google Calendar sync
 
 import { appointmentEmail, appointmentUpdateEmail } from '../../src/emails/appointment-confirmation.js';
-
-// Helper: get Google access token from stored refresh token
-async function getGoogleAccessToken(env: any): Promise<string | null> {
-  try {
-    const row = await env.DB.prepare(
-      "SELECT value FROM admin_settings WHERE key = 'google_refresh_token'"
-    ).first();
-
-    const refreshToken = row?.value;
-    if (!refreshToken) return null;
-
-    const resp = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        client_id: env.GOOGLE_CLIENT_ID,
-        client_secret: env.GOOGLE_CLIENT_SECRET,
-        refresh_token: refreshToken,
-        grant_type: 'refresh_token',
-      }),
-    });
-
-    const data = await resp.json();
-    if (!data.access_token) {
-      console.error('No access_token from Google', data);
-      return null;
-    }
-
-    return data.access_token as string;
-  } catch (err) {
-    console.error('getGoogleAccessToken error', err);
-    return null;
-  }
-}
+import {
+  getGoogleAccessToken,
+  buildCalendarEvent,
+  frequencyToIntervalDays
+} from '../lib/google';
 
 // GET - Fetch appointments for a date range
 export async function onRequestGet({ request, env }: any) {
@@ -81,68 +52,83 @@ export async function onRequestGet({ request, env }: any) {
   }
 }
 
-// POST - Create new appointment
+const RECURRING_COUNT = 8;
+const APPOINTMENT_DURATION_HOURS = 2;
+
+// POST - Create new appointment (with optional recurring series)
 export async function onRequestPost({ request, env }: any) {
   try {
-    const { clientId, dateTime, service, notes } = await request.json();
+    const { clientId, dateTime, service, notes, frequency } = await request.json();
 
+    // Insert parent row
     const stmt = await env.DB.prepare(`
-      INSERT INTO appointments (client_id, date_time, service, notes, created_at, updated_at)
-      VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))
-    `).bind(clientId, dateTime, service || '', notes || '').run();
+      INSERT INTO appointments (client_id, date_time, service, notes, frequency, created_at)
+      VALUES (?, ?, ?, ?, ?, datetime('now'))
+    `).bind(clientId, dateTime, service || '', notes || '', frequency || '').run();
 
     const appointmentId = stmt.meta.last_row_id;
 
-    // Send confirmation email via Resend
-    if (env.RESEND_API_KEY) {
-      try {
-        const client = await env.DB.prepare(
-          `SELECT email, name FROM clients WHERE id = ?`
-        ).bind(clientId).first();
-
-        if (client && client.email) {
-          const formattedDate = new Date(dateTime).toLocaleString();
-
-          await fetch("https://api.resend.com/emails", {
-            method: "POST",
-            headers: {
-              "Authorization": `Bearer ${env.RESEND_API_KEY}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              from: "Kasaglow Cleaning <noreply@kasaglowclean.com>",
-              to: [client.email],
-              subject: "Your Cleaning Appointment Has Been Scheduled",
-              html: appointmentEmail(client.name, formattedDate, service || 'Cleaning Service'),
-            }),
-          });
-        }
-      } catch (emailErr) {
-        console.error("Failed to send confirmation email", emailErr);
-        // Don't fail the appointment creation if email fails
+    // Create sibling DB rows for recurring series (calendar view + individual cancellation)
+    const intervalDays = frequencyToIntervalDays(frequency);
+    const createdIds: number[] = [appointmentId];
+    if (intervalDays > 0) {
+      const startMs = new Date(dateTime).getTime();
+      for (let i = 1; i < RECURRING_COUNT; i += 1) {
+        const childDate = new Date(startMs + i * intervalDays * 86400000).toISOString();
+        const child = await env.DB.prepare(`
+          INSERT INTO appointments (client_id, date_time, service, notes, frequency, recurring_parent_id, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
+        `).bind(clientId, childDate, service || '', notes || '', frequency || '', appointmentId).run();
+        createdIds.push(child.meta.last_row_id);
       }
     }
 
-    // Google Calendar sync: create event
+    const client = await env.DB.prepare(
+      `SELECT email, name FROM clients WHERE id = ?`
+    ).bind(clientId).first();
+
+    // Send confirmation email via Resend (one email for the whole series)
+    if (env.RESEND_API_KEY && client?.email) {
+      try {
+        const formattedDate = new Date(dateTime).toLocaleString();
+        const subjectSuffix = intervalDays > 0
+          ? ` (${frequency}, ${RECURRING_COUNT} visits)`
+          : '';
+        await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: "Kasaglow Cleaning <noreply@kasaglowclean.com>",
+            to: [client.email],
+            subject: `Your Cleaning Appointment Has Been Scheduled${subjectSuffix}`,
+            html: appointmentEmail(client.name, formattedDate, service || 'Cleaning Service'),
+          }),
+        });
+      } catch (emailErr) {
+        console.error("Failed to send confirmation email", emailErr);
+      }
+    }
+
+    // Google Calendar sync: create a single recurring event using RRULE when applicable
     try {
       const accessToken = await getGoogleAccessToken(env);
       if (accessToken) {
-        const client = await env.DB.prepare(
-          `SELECT email, name FROM clients WHERE id = ?`
-        ).bind(clientId).first();
-
         const startIso = new Date(dateTime).toISOString();
-        const endIso = new Date(new Date(dateTime).getTime() + 2 * 60 * 60 * 1000).toISOString(); // +2 hours
+        const endIso = new Date(new Date(dateTime).getTime() + APPOINTMENT_DURATION_HOURS * 3600000).toISOString();
 
-        const eventBody = {
-          summary: `🧹 KasaGlow: ${service || 'Cleaning Service'}`,
-          description: client
-            ? `Client: ${client.name} (${client.email})\nNotes: ${notes || ''}`
-            : `Notes: ${notes || ''}`,
-          start: { dateTime: startIso, timeZone: 'America/New_York' },
-          end: { dateTime: endIso, timeZone: 'America/New_York' },
-          reminders: { useDefault: true },
-        };
+        const eventBody = buildCalendarEvent({
+          service,
+          clientName: client?.name,
+          clientEmail: client?.email,
+          notes,
+          startIso,
+          endIso,
+          frequency,
+          occurrences: RECURRING_COUNT
+        });
 
         const eventResp = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
           method: 'POST',
@@ -153,7 +139,7 @@ export async function onRequestPost({ request, env }: any) {
           body: JSON.stringify(eventBody),
         });
 
-        const eventJson = await eventResp.json();
+        const eventJson = await eventResp.json() as any;
         if (eventResp.ok && eventJson.id) {
           await env.DB.prepare(
             `UPDATE appointments SET googleEventId = ? WHERE id = ?`
@@ -166,7 +152,12 @@ export async function onRequestPost({ request, env }: any) {
       console.error('Google Calendar create error', calErr);
     }
 
-    return new Response(JSON.stringify({ ok: true, id: appointmentId }), {
+    return new Response(JSON.stringify({
+      ok: true,
+      id: appointmentId,
+      occurrences: createdIds.length,
+      ids: createdIds
+    }), {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err: any) {

@@ -30,6 +30,8 @@ const ClientIntakeForm: React.FC = () => {
     otherService: '',
     frequency: 'One-Time Cleaning',
     customFrequency: '',
+    appointmentDate: '',
+    appointmentTime: '',
     preferredDates: '',
     specialInstructions: '',
     rateQuoted: '',
@@ -37,6 +39,8 @@ const ClientIntakeForm: React.FC = () => {
     paymentMethod: '',
     balanceDue: '',
   });
+
+  const [bookedOccurrences, setBookedOccurrences] = useState(0);
 
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -76,6 +80,8 @@ const ClientIntakeForm: React.FC = () => {
         throw new Error(data.error || 'Submission failed');
       }
 
+      const data = await res.json().catch(() => ({}));
+      setBookedOccurrences(data?.occurrences || 0);
       setSubmitted(true);
       setForm({
         name: '',
@@ -88,6 +94,8 @@ const ClientIntakeForm: React.FC = () => {
         otherService: '',
         frequency: 'One-Time Cleaning',
         customFrequency: '',
+        appointmentDate: '',
+        appointmentTime: '',
         preferredDates: '',
         specialInstructions: '',
         rateQuoted: '',
@@ -115,7 +123,11 @@ const ClientIntakeForm: React.FC = () => {
       <div className="bg-white shadow-md rounded-xl p-6 space-y-6">
         {submitted && (
           <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-md text-sm">
-            Thank you! Your information has been submitted. We'll contact you to confirm your appointment details.
+            {bookedOccurrences > 1
+              ? `Thank you! We've scheduled ${bookedOccurrences} recurring visits and emailed you the details. We'll reach out if anything needs to change.`
+              : bookedOccurrences === 1
+                ? `Thank you! Your appointment is booked and a confirmation email is on its way.`
+                : `Thank you! Your information has been submitted. We'll contact you to confirm your appointment details.`}
           </div>
         )}
         {error && (
@@ -290,15 +302,47 @@ const ClientIntakeForm: React.FC = () => {
                 )}
               </div>
 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    First Appointment Date
+                  </label>
+                  <input
+                    type="date"
+                    name="appointmentDate"
+                    value={form.appointmentDate}
+                    onChange={handleChange}
+                    min={new Date().toISOString().slice(0, 10)}
+                    className="w-full border rounded-lg px-3 py-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Preferred Time
+                  </label>
+                  <input
+                    type="time"
+                    name="appointmentTime"
+                    value={form.appointmentTime}
+                    onChange={handleChange}
+                    className="w-full border rounded-lg px-3 py-2"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 md:col-span-2">
+                  Pick a date and time and we'll book the first visit automatically. For recurring, we'll add the next 7 at the same day/time. Leave blank to just send us your info and we'll reach out.
+                </p>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Preferred Cleaning Date(s) / Time(s)
+                  Alternative Date/Time Preferences (optional)
                 </label>
                 <textarea
                   name="preferredDates"
                   value={form.preferredDates}
                   onChange={handleChange}
                   rows={2}
+                  placeholder="e.g., Tuesday mornings work best, avoid weekends"
                   className="w-full border rounded-lg px-3 py-2"
                 />
               </div>

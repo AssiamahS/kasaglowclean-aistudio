@@ -228,6 +228,7 @@ export default function AdminView() {
     start: '',
     end: '',
     notes: '',
+    frequency: 'One-Time Cleaning',
   });
 
   // -----------------------------
@@ -546,6 +547,7 @@ export default function AdminView() {
       start: start.toISOString(),
       end: end.toISOString(),
       notes: '',
+      frequency: 'One-Time Cleaning',
     });
     setShowAppointmentModal(true);
   }, []);
@@ -559,22 +561,38 @@ export default function AdminView() {
       start: appt.start.toISOString(),
       end: appt.end.toISOString(),
       notes: '',
+      frequency: (appt as any).frequency || 'One-Time Cleaning',
     });
     setShowAppointmentModal(true);
   }, []);
 
   const saveAppointment = useCallback(async () => {
     const method = editingAppointment ? 'PUT' : 'POST';
+    const payload: any = {
+      clientId: appointmentForm.clientId,
+      dateTime: appointmentForm.start,
+      service: appointmentForm.service,
+      notes: appointmentForm.notes,
+      frequency: appointmentForm.frequency,
+    };
+    if (editingAppointment) payload.id = editingAppointment.id;
 
-    await fetch('/api/appointments', {
+    const res = await fetch('/api/appointments', {
       method,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(
-        editingAppointment
-          ? { id: editingAppointment.id, ...appointmentForm }
-          : appointmentForm
-      ),
+      body: JSON.stringify(payload),
     });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      alert(data.error || 'Save failed');
+      return;
+    }
+
+    const data = await res.json().catch(() => ({}));
+    if (!editingAppointment && data?.occurrences > 1) {
+      alert(`Created ${data.occurrences} recurring appointments (${appointmentForm.frequency}).`);
+    }
 
     setShowAppointmentModal(false);
     setEditingAppointment(null);
@@ -910,7 +928,10 @@ export default function AdminView() {
                         onClick={() =>
                           fetch('/api/auth/unlink', { method: 'POST' })
                             .then(() => setIsGoogleLinked(false))
-                            .catch(() => setIsGoogleLinked(false))
+                            .catch((err) => {
+                              console.error('Google unlink failed', err);
+                              setIsGoogleLinked(false);
+                            })
                         }
                         className="text-[10px] text-gray-500 underline ml-1"
                       >
@@ -935,12 +956,12 @@ export default function AdminView() {
                 </div>
               }
             >
-              {/* Calendar containment: keeps DnD usable on mobile */}
+              {/* Calendar containment: on mobile the agenda/day view flows at screen width
+                  (no horizontal overflow); on md+ we give month/week a 900px inner canvas. */}
               <div className="rounded-lg border bg-white">
-                <div className="h-[60dvh] min-h-[400px] max-h-[600px]">
+                <div className="h-[70dvh] min-h-[400px] md:h-[60dvh] md:max-h-[600px]">
                   <div className="h-full w-full overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
-                    {/* Inner min-width keeps week view usable */}
-                    <div className="min-w-[900px] h-full">
+                    <div className="h-full md:min-w-[900px]">
                       <DnDCalendar
                         localizer={localizer}
                         events={calendarEvents as any}
@@ -953,8 +974,8 @@ export default function AdminView() {
                         selectable
                         resizable
                         draggableAccessor={() => true}
-                        defaultView={isMobile ? 'day' : 'week'}
-                        views={['month', 'week', 'day', 'agenda']}
+                        defaultView={isMobile ? 'agenda' : 'week'}
+                        views={isMobile ? ['agenda', 'day'] : ['month', 'week', 'day', 'agenda']}
                         step={30}
                         showMultiDayTimes
                         style={{ height: '100%' }}
@@ -964,8 +985,8 @@ export default function AdminView() {
                 </div>
               </div>
 
-              <p className="mt-3 text-sm text-gray-600">
-                Mobile tip: scroll horizontally to see the full grid, then drag-and-drop appointments normally.
+              <p className="mt-3 text-sm text-gray-600 md:hidden">
+                Agenda view fits the screen; tap Day for a timed view.
               </p>
             </PanelShell>
           </div>
@@ -1140,6 +1161,25 @@ export default function AdminView() {
               }
               className="w-full px-3 py-2 border rounded"
             />
+
+            <label className="text-sm font-semibold">Frequency</label>
+            <select
+              value={appointmentForm.frequency}
+              onChange={(e) =>
+                setAppointmentForm((p) => ({ ...p, frequency: e.target.value }))
+              }
+              className="w-full px-3 py-2 border rounded"
+            >
+              <option>One-Time Cleaning</option>
+              <option>Weekly</option>
+              <option>Bi-Weekly</option>
+              <option>Monthly</option>
+            </select>
+            {appointmentForm.frequency !== 'One-Time Cleaning' && !editingAppointment && (
+              <p className="text-xs text-gray-500 -mt-2">
+                We'll create 8 visits at this cadence and sync them as one recurring Google Calendar event.
+              </p>
+            )}
 
             <textarea
               placeholder="Notes (optional)"
