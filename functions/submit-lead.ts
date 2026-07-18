@@ -2,46 +2,13 @@
 // Cloudflare Pages Function for handling lead form submissions
 
 import { estimateRequestEmail } from '../src/emails/estimate-email';
+import { getGoogleAccessToken } from './lib/google';
 
 interface Env {
   DB: D1Database;
   RESEND_API_KEY?: string;
   GOOGLE_CLIENT_ID?: string;
   GOOGLE_CLIENT_SECRET?: string;
-}
-
-// Helper: get Google access token from stored refresh token
-async function getGoogleAccessToken(env: Env): Promise<string | null> {
-  try {
-    const row = await env.DB.prepare(
-      "SELECT value FROM admin_settings WHERE key = 'google_refresh_token'"
-    ).first();
-
-    const refreshToken = (row as any)?.value;
-    if (!refreshToken) return null;
-
-    const resp = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        client_id: env.GOOGLE_CLIENT_ID,
-        client_secret: env.GOOGLE_CLIENT_SECRET,
-        refresh_token: refreshToken,
-        grant_type: 'refresh_token',
-      }),
-    });
-
-    const data = await resp.json();
-    if (!data.access_token) {
-      console.error('No access_token from Google for lead', data);
-      return null;
-    }
-
-    return data.access_token as string;
-  } catch (err) {
-    console.error('getGoogleAccessToken (lead) error', err);
-    return null;
-  }
 }
 
 // Optional bridge: create a calendar event from lead if dateTime is supplied

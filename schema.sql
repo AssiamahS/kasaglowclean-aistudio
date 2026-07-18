@@ -61,12 +61,15 @@ CREATE TABLE IF NOT EXISTS appointments (
   status TEXT DEFAULT 'scheduled',
   notes TEXT,
   googleEventId TEXT,
+  frequency TEXT DEFAULT '',
+  recurring_parent_id INTEGER REFERENCES appointments(id) ON DELETE SET NULL,
   created_at TEXT DEFAULT (datetime('now')),
   FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_appointments_date ON appointments(date_time);
 CREATE INDEX IF NOT EXISTS idx_appointments_client ON appointments(client_id);
+CREATE INDEX IF NOT EXISTS idx_appointments_parent ON appointments(recurring_parent_id);
 
 -- Admin settings table for Google Calendar integration
 CREATE TABLE IF NOT EXISTS admin_settings (
