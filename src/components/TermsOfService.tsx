@@ -1,3 +1,4 @@
+import BRAND from '../brand';
 import React from 'react';
 
 const TermsOfService: React.FC = () => {
@@ -12,7 +13,7 @@ const TermsOfService: React.FC = () => {
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-3">1. Acceptance of Terms</h2>
               <p>
-                By accessing or using KasaGlow Cleaning Services ("Service"), you agree to be bound by
+                By accessing or using {BRAND.name} ("Service"), you agree to be bound by
                 these Terms of Service. If you do not agree to these terms, please do not use our services.
               </p>
             </section>
@@ -20,7 +21,7 @@ const TermsOfService: React.FC = () => {
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-3">2. Service Description</h2>
               <p>
-                KasaGlow Cleaning Services provides professional residential and commercial cleaning
+                {BRAND.name} provides professional residential and commercial cleaning
                 services. Service details, pricing, and availability may vary based on location and specific requirements.
               </p>
             </section>
@@ -61,7 +62,7 @@ const TermsOfService: React.FC = () => {
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-3">6. Liability and Insurance</h2>
               <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>KasaGlow Cleaning Services is fully insured and bonded</li>
+                <li>{BRAND.name} is fully insured and bonded</li>
                 <li>We are not liable for pre-existing damage to property</li>
                 <li>Any damages caused by our staff will be reported and addressed promptly</li>
                 <li>Claims must be reported within 24 hours of service completion</li>
@@ -88,7 +89,7 @@ const TermsOfService: React.FC = () => {
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-3">9. Limitation of Liability</h2>
               <p>
-                KasaGlow Cleaning Services shall not be liable for any indirect, incidental, special, or
+                {BRAND.name} shall not be liable for any indirect, incidental, special, or
                 consequential damages arising from the use of our services.
               </p>
             </section>
@@ -107,8 +108,8 @@ const TermsOfService: React.FC = () => {
                 For questions about these Terms of Service, please contact us:
               </p>
               <div className="mt-3 space-y-1">
-                <p><strong>Email:</strong> info@kasaglowclean.com</p>
-                <p><strong>Phone:</strong> (908) 417-5388</p>
+                <p><strong>Email:</strong> {BRAND.email}</p>
+                <p><strong>Phone:</strong> {BRAND.phone}</p>
               </div>
             </section>
 

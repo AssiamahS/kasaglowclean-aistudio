@@ -1,7 +1,8 @@
+import BRAND from './brand';
 import type { Service, Feature, ProcessStep, Testimonial, FeatureSlide, Location } from './types';
 import {
-  SparklesIcon, HomeIcon, BuildingOfficeIcon, TruckIcon,
-  ShieldCheckIcon, ThumbUpIcon, UsersIcon,
+  SparklesIcon, SparklesSolidIcon, HomeIcon, BuildingOfficeIcon, TruckIcon,
+  MovingBoxIcon, ShieldCheckIcon, ThumbUpIcon, UsersIcon,
   PhoneArrowUpRightIcon, CalendarDaysIcon, CheckBadgeIcon,
   HeartIcon, LockClosedIcon, CheckCircleIcon
 } from './components/IconComponents';
@@ -27,18 +28,16 @@ export const SERVICES: Service[] = [
     reservationFee: 25,
   },
   {
-    icon: SparklesIcon,
+    icon: SparklesSolidIcon,
     title: 'Deep Cleaning',
     description: 'A comprehensive, top-to-bottom clean that leaves your home spotless. Perfect for spring cleaning or special occasions.',
-    // FIX: Added 'duration' and 'reservationFee' to match the updated Service type.
     duration: 240,
     reservationFee: 50,
   },
   {
-    icon: TruckIcon,
+    icon: MovingBoxIcon,
     title: 'Move In/Out Cleaning',
     description: 'Ensure a smooth transition. We clean your old home for the next residents or your new home before you settle in.',
-    // FIX: Added 'duration' and 'reservationFee' to match the updated Service type.
     duration: 180,
     reservationFee: 40,
   },
@@ -56,7 +55,7 @@ export const FEATURE_SLIDES: FeatureSlide[] = [
   {
     image: '',
     video: '/videos/deep-cleaning.mp4',
-    title: 'The KasaGlow Difference',
+    title: `The ${BRAND.shortName} Difference`,
     subtitle: 'Exceptional Quality, Every Time',
     description: 'We are committed to providing a reliable, high-quality experience. Our professional team is dedicated to making your home a cleaner, healthier, and happier place.',
     features: [
@@ -118,37 +117,37 @@ export const HOW_IT_WORKS_STEPS: ProcessStep[] = [
   {
     icon: CheckBadgeIcon,
     title: '3. Enjoy Your Clean Home',
-    description: 'Our professional team will arrive on time and transform your space. Relax and enjoy the KasaGlow shine!',
+    description: `Our professional team will arrive on time and transform your space. Relax and enjoy the ${BRAND.shortName} shine!`,
   },
 ];
 
 export const TESTIMONIALS: Testimonial[] = [
   {
-    quote: "Our school has never looked better! KasaGlow keeps our classrooms spotless and the kids love coming to a clean environment. Very reliable service.",
+    quote: `Our school has never looked better! ${BRAND.shortName} keeps our classrooms spotless and the kids love coming to a clean environment. Very reliable service.`,
     author: 'Maria R., Teacher',
     location: '',
     rating: 5,
   },
   {
-    quote: "As a nurse, cleanliness is everything. KasaGlow maintains hospital-grade standards in our medical office. Professional and thorough every single time.",
+    quote: `As a nurse, cleanliness is everything. ${BRAND.shortName} maintains hospital-grade standards in our medical office. Professional and thorough every single time.`,
     author: 'Jennifer K., Nurse',
     location: '',
     rating: 5,
   },
   {
-    quote: "Our marketing agency looks amazing thanks to KasaGlow. Clients are always impressed when they visit. Worth every penny for our brand image.",
+    quote: `Our marketing agency looks amazing thanks to ${BRAND.shortName}. Clients are always impressed when they visit. Worth every penny for our brand image.`,
     author: 'Alex T., Marketing Director',
     location: '',
     rating: 5,
   },
   {
-    quote: "KasaGlow cleaned our construction site office and crew areas. They handled the dirt and dust like pros. Great job on a tough space.",
+    quote: `${BRAND.shortName} cleaned our construction site office and crew areas. They handled the dirt and dust like pros. Great job on a tough space.`,
     author: 'Mike D., Site Manager',
     location: '',
     rating: 5,
   },
   {
-    quote: "We use KasaGlow for our weekly office cleaning, and the difference is night and day. The team is reliable, efficient, and always leaves the place looking immaculate.",
+    quote: `We use ${BRAND.shortName} for our weekly office cleaning, and the difference is night and day. The team is reliable, efficient, and always leaves the place looking immaculate.`,
     author: 'David L., Office Manager',
     location: '',
     rating: 5,

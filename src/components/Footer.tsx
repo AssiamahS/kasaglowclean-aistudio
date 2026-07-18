@@ -1,10 +1,11 @@
+import BRAND from '../brand';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const KasaGlowLogo: React.FC<{ className?: string }> = ({ className }) => (
+const BrandLogo: React.FC<{ className?: string }> = ({ className }) => (
   <img
-    src="/images/smalllogo.jpg"
-    alt="KasaGlow Cleaning Services Logo"
+    src={BRAND.logo}
+    alt={`${BRAND.name} Logo`}
     className={className}
   />
 );
@@ -32,7 +33,7 @@ const Footer: React.FC = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 max-w-7xl">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div className="lg:col-span-4">
-            <Link to="/"><KasaGlowLogo className="h-auto w-48 mb-4" /></Link>
+            <Link to="/"><BrandLogo className="h-auto w-48 mb-4" /></Link>
             <p className="text-gray-400">Your trusted partner for a spotless space.</p>
           </div>
           
@@ -66,7 +67,7 @@ const Footer: React.FC = () => {
         </div>
 
         <div className="mt-16 pt-8 border-t border-gray-700 flex flex-col sm:flex-row justify-between items-center">
-          <p className="text-gray-400 text-sm">&copy; {new Date().getFullYear()} KasaGlowClean Services. All Rights Reserved.</p>
+          <p className="text-gray-400 text-sm">&copy; {new Date().getFullYear()} {BRAND.name}. All Rights Reserved.</p>
           {/* Social media links can be added here */}
         </div>
       </div>

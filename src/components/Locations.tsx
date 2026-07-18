@@ -1,3 +1,4 @@
+import BRAND from '../brand';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import type { Location } from '../types';
@@ -26,7 +27,7 @@ const LocationsPage: React.FC = () => {
         <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-4">Our Service Areas</h2>
             <p className="text-lg text-neutral max-w-3xl mx-auto">
-            KasaGlow is proud to offer top-quality cleaning services across the tri-state area. Find out if we serve your community.
+            {BRAND.shortName} is proud to offer top-quality cleaning services across the tri-state area. Find out if we serve your community.
             </p>
         </div>
 
@@ -38,7 +39,7 @@ const LocationsPage: React.FC = () => {
 
         <div className="mt-16 text-center bg-white p-8 rounded-lg shadow-md border border-base-300">
             <h3 className="text-2xl font-bold text-gray-800">Don't See Your Location?</h3>
-            <p className="mt-2 text-neutral max-w-2xl mx-auto">We are constantly expanding! Contact us today to see if we can bring the KasaGlow shine to your neighborhood.</p>
+            <p className="mt-2 text-neutral max-w-2xl mx-auto">We are constantly expanding! Contact us today to see if we can bring the {BRAND.shortName} shine to your neighborhood.</p>
             <Link to="/contact" className="mt-6 inline-block px-8 py-3 bg-primary text-primary-content font-bold rounded-lg shadow-md hover:bg-primary-focus transition-colors">
               Request Service
             </Link>
