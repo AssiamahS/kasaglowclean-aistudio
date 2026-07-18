@@ -1,8 +1,17 @@
 import type { PagesFunction } from '@cloudflare/workers-types';
+import { depositCents, json, toId } from './_lib';
 
-export const onRequestPost: PagesFunction = async ({ env }) => {
-  const auth = Buffer.from(env.PAYPAL_CLIENT_ID + ':' + env.PAYPAL_SECRET).toString('base64');
+export const onRequestPost: PagesFunction = async ({ request, env }: any) => {
+  if (!env.PAYPAL_CLIENT_ID || !env.PAYPAL_SECRET) {
+    return json({ error: 'PayPal is not enabled yet. Please use card payment or contact us.' }, 503);
+  }
 
+  const body = await request.json().catch(() => ({}));
+  const clientId = toId(body.clientId);
+  const appointmentId = toId(body.appointmentId);
+  const amount = (depositCents(env) / 100).toFixed(2);
+
+  const auth = btoa(`${env.PAYPAL_CLIENT_ID}:${env.PAYPAL_SECRET}`);
   const response = await fetch(`https://api-m.${env.PAYPAL_ENV}.paypal.com/v2/checkout/orders`, {
     method: 'POST',
     headers: {
@@ -11,10 +20,16 @@ export const onRequestPost: PagesFunction = async ({ env }) => {
     },
     body: JSON.stringify({
       intent: 'CAPTURE',
-      purchase_units: [{ amount: { currency_code: 'USD', value: '35.00' } }]
+      purchase_units: [{
+        amount: { currency_code: 'USD', value: amount },
+        // custom_id travels through to the capture response so the payment
+        // can be attributed to the booking without extra state.
+        custom_id: `${clientId ?? ''}:${appointmentId ?? ''}`,
+        description: 'KasaGlow Cleaning — Booking Deposit'
+      }]
     })
   });
 
   const data = await response.json();
-  return new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } });
+  return json(data, response.ok ? 200 : 502);
 };

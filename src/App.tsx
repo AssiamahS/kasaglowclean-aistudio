@@ -13,6 +13,7 @@ import FAQ from './components/FAQ';
 import PrivacyPolicy from './components/PrivacyPolicy';
 import TermsOfService from './components/TermsOfService';
 import PaymentPage from './components/PaymentPage';
+import { PaymentSuccess, PaymentCancel } from './components/PaymentResult';
 import ClientIntakeForm from './components/ClientIntakeForm';
 
 // Component to handle scroll to top on route changes
@@ -42,6 +43,8 @@ const App: React.FC = () => {
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/pay" element={<PaymentPage />} />
+            <Route path="/payment-success" element={<PaymentSuccess />} />
+            <Route path="/payment-cancel" element={<PaymentCancel />} />
             <Route path="/book" element={<ClientIntakeForm />} />
             <Route path="/faq" element={<FAQ />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />

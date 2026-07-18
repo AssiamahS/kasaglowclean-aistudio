@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const serviceOptions = [
   'Standard Cleaning',
@@ -19,6 +20,7 @@ const frequencyOptions = [
 ];
 
 const ClientIntakeForm: React.FC = () => {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     name: '',
     address: '',
@@ -83,6 +85,15 @@ const ClientIntakeForm: React.FC = () => {
       const data = await res.json().catch(() => ({}));
       setBookedOccurrences(data?.occurrences || 0);
       setSubmitted(true);
+
+      // Send the client straight to the deposit page — this is what turns a
+      // lead into a paid booking.
+      if (data?.clientId) {
+        const q = new URLSearchParams({ clientId: String(data.clientId) });
+        if (data.appointmentId) q.set('appointmentId', String(data.appointmentId));
+        navigate(`/pay?${q.toString()}`);
+        return;
+      }
       setForm({
         name: '',
         address: '',

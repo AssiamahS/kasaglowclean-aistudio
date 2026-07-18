@@ -11,7 +11,17 @@ database_id = "4b729739-978c-41ac-af74-7ad8df3b943d"
 
 [vars]
 SITE_URL = "https://kasaglowclean.com"
+# Flip to "live" once real PayPal credentials are set as secrets.
 PAYPAL_ENV = "sandbox"
-STRIPE_PUBLIC_KEY = "pk_live_xxxxxxxxxx"
-RESEND_API_KEY = "re_Q6shyEbe_KBz6PPtKCUshy8z6B4jsk6V8"
-ADMIN_SECRET = "password123"
+# Booking deposit in cents ($35 default).
+DEPOSIT_CENTS = "3500"
+
+# SECRETS — never commit these. Set in the Cloudflare dashboard
+# (Pages project → Settings → Environment variables, type "Secret")
+# or via: wrangler pages secret put <NAME> --project-name kasaglowclean-aistudio
+#   ADMIN_SECRET       (long random string; the old committed one is burned)
+#   RESEND_API_KEY     (ROTATE — the previous key was committed publicly)
+#   STRIPE_SECRET_KEY  (sk_live_...)
+#   PAYPAL_CLIENT_ID / PAYPAL_SECRET  (live app credentials)
+# Build-time var for the frontend PayPal button:
+#   VITE_PAYPAL_CLIENT_ID  (plain env var, not secret)
