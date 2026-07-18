@@ -1,0 +1,1 @@
+- 2026-07-18: CF Pages deploys from MAIN, but months of work sat unpushed on feat/intake-appointments-and-polish — always check which branch production tracks. wrangler.toml [vars] had committed secrets (public repo): Resend key + ADMIN_SECRET burned, must rotate in dashboard. Payments table is created lazily by functions/payments/_lib.ts, no migration needed.

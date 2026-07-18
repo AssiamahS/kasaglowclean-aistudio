@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import BRAND from '../brand';
 
 const serviceOptions = [
   'Standard Cleaning',
@@ -125,7 +126,7 @@ const ClientIntakeForm: React.FC = () => {
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
       <h1 className="text-3xl font-bold text-gray-900 mb-2">
-        Kasaglow Cleaning Services
+        {BRAND.name}
       </h1>
       <p className="text-gray-600 mb-6">
         Client Information Form

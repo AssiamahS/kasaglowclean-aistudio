@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { PhoneIcon, MenuIcon, XIcon } from './IconComponents';
+import BRAND from '../brand';
 
-const KasaGlowLogo: React.FC<{ className?: string }> = ({ className }) => (
+const BrandLogo: React.FC<{ className?: string }> = ({ className }) => (
   <img
-    src="/images/smalllogo.jpg"
-    alt="KasaGlow Cleaning Services Logo"
+    src={BRAND.logo}
+    alt={`${BRAND.name} Logo`}
     className={className}
   />
 );
@@ -73,7 +74,7 @@ const Header: React.FC = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between py-3">
           <Link to="/" className="flex-shrink-0 flex items-center h-12 sm:h-14">
-            <KasaGlowLogo className="h-full w-auto transition-all duration-300" />
+            <BrandLogo className="h-full w-auto transition-all duration-300" />
           </Link>
 
           <div className="hidden lg:flex items-center space-x-2">
@@ -81,9 +82,9 @@ const Header: React.FC = () => {
           </div>
 
           <div className="hidden lg:flex items-center space-x-4">
-            <a href="tel:9084175388" className="flex items-center gap-2 font-semibold text-neutral hover:text-primary transition-colors">
+            <a href={BRAND.phoneHref} className="flex items-center gap-2 font-semibold text-neutral hover:text-primary transition-colors">
               <PhoneIcon className="h-5 w-5" />
-              (908) 417-5388
+              {BRAND.phone}
             </a>
             <Link to="/contact" className="px-5 py-3 bg-primary text-primary-content font-bold rounded-lg shadow-md hover:bg-primary-focus transition-colors">
               Get a Free Estimate
@@ -102,7 +103,7 @@ const Header: React.FC = () => {
       <div className={`lg:hidden fixed inset-0 bg-white z-[60] transform ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'} transition-transform duration-300 ease-in-out`}>
         <div className="flex justify-between items-center py-3 px-4 border-b">
            <Link to="/" onClick={closeMenu}>
-             <KasaGlowLogo className="h-auto w-48" />
+             <BrandLogo className="h-auto w-48" />
            </Link>
           <button onClick={closeMenu} aria-label="Close menu">
             <XIcon className="h-8 w-8 text-neutral" />

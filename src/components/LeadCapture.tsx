@@ -1,3 +1,4 @@
+import BRAND from '../brand';
 import React, { useState } from 'react';
 import { UserIcon, MailIcon, PhoneIcon } from './IconComponents';
 import CalendarBooking from './CalendarBooking';
@@ -137,16 +138,16 @@ const LeadCapture: React.FC = () => {
           <div className="space-y-6">
             <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900">Get Your Free Estimate Today</h2>
             <p className="text-lg text-neutral">
-              Ready for a cleaner home? Fill out the form and a KasaGlow representative will get in touch with you to provide a free, no-obligation estimate tailored to your needs.
+              Ready for a cleaner home? Fill out the form and a {BRAND.shortName} representative will get in touch with you to provide a free, no-obligation estimate tailored to your needs.
             </p>
             <div className="space-y-4 pt-4">
-              <a href="tel:9084175388" className="flex items-center gap-4 text-lg text-neutral hover:text-primary transition-colors">
+              <a href={BRAND.phoneHref} className="flex items-center gap-4 text-lg text-neutral hover:text-primary transition-colors">
                 <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10"><PhoneIcon className="h-6 w-6 text-primary" /></span>
-                <span className="font-semibold">(908) 417-5388</span>
+                <span className="font-semibold">{BRAND.phone}</span>
               </a>
-              <a href="mailto:info@kasaglowclean.com" className="flex items-center gap-4 text-lg text-neutral hover:text-primary transition-colors">
+              <a href={`mailto:${BRAND.email}`} className="flex items-center gap-4 text-lg text-neutral hover:text-primary transition-colors">
                 <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10"><MailIcon className="h-6 w-6 text-primary" /></span>
-                <span className="font-semibold">info@kasaglowclean.com</span>
+                <span className="font-semibold">{BRAND.email}</span>
               </a>
             </div>
           </div>

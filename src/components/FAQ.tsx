@@ -1,3 +1,4 @@
+import BRAND from '../brand';
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -13,7 +14,7 @@ const faqData: FAQItem[] = [
   },
   {
     question: "How do I get a quote?",
-    answer: "You can get a free estimate by filling out our contact form on the website, calling us at (908) 417-5388, or emailing us at info@kasaglowclean.com. We'll provide a customized quote based on your specific needs."
+    answer: `You can get a free estimate by filling out our contact form on the website, calling us at ${BRAND.phone}, or emailing us at ${BRAND.email}. We'll provide a customized quote based on your specific needs.`
   },
   {
     question: "What cleaning services do you offer?",
@@ -29,7 +30,7 @@ const faqData: FAQItem[] = [
   },
   {
     question: "Are you insured and bonded?",
-    answer: "Yes, KasaGlow Cleaning Services is fully insured and bonded for your peace of mind and protection."
+    answer: `Yes, ${BRAND.name} is fully insured and bonded for your peace of mind and protection.`
   },
   {
     question: "What if I need to reschedule or cancel?",
@@ -111,10 +112,10 @@ const FAQ: React.FC = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a
-              href="tel:9084175388"
+              href={BRAND.phoneHref}
               className="px-6 py-3 bg-primary text-white font-bold rounded-lg shadow-md hover:bg-primary-focus transition-colors"
             >
-              Call (908) 417-5388
+              Call {BRAND.phone}
             </a>
             <Link
               to="/contact"

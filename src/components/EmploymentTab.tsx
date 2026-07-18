@@ -1,3 +1,4 @@
+import BRAND from '../brand';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -252,8 +253,8 @@ const EmploymentTab: React.FC = () => {
             }}
           >
             <div className="relative z-10 p-8 md:p-12 text-white">
-              <h1 className="text-3xl md:text-5xl font-extrabold">KasaGlow Careers</h1>
-              <p className="mt-4 max-w-3xl">Join our KasaGlow team — we offer flexible schedules, competitive pay, and the tools to do your best work.</p>
+              <h1 className="text-3xl md:text-5xl font-extrabold">{BRAND.shortName} Careers</h1>
+              <p className="mt-4 max-w-3xl">Join our {BRAND.shortName} team — we offer flexible schedules, competitive pay, and the tools to do your best work.</p>
             </div>
           </div>
         </div>

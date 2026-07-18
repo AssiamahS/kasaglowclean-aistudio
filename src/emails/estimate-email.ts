@@ -1,3 +1,4 @@
+import BRAND from '../brand';
 // Professional email template for Free Estimate requests
 // Designed to look like a formal service estimate/quote
 
@@ -13,7 +14,7 @@ export const estimateRequestEmail = (
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>New Estimate Request - KasaGlow Cleaning</title>
+  <title>New Estimate Request - ${BRAND.name}</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background-color: #f3f4f6;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f3f4f6; padding: 40px 20px;">
@@ -25,7 +26,7 @@ export const estimateRequestEmail = (
           <tr>
             <td style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 40px 30px; text-align: center;">
               <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">
-                KasaGlow Cleaning Services
+                ${BRAND.name}
               </h1>
               <p style="margin: 10px 0 0 0; color: #dbeafe; font-size: 14px; font-weight: 500;">
                 Professional & Residential Cleaning Experts
@@ -153,13 +154,13 @@ ${message}
                 <tr>
                   <td align="center">
                     <p style="margin: 0 0 10px 0; color: #6b7280; font-size: 13px; line-height: 1.6;">
-                      <strong style="color: #1f2937;">KasaGlow Cleaning Services</strong><br>
+                      <strong style="color: #1f2937;">${BRAND.name}</strong><br>
                       Professional & Residential Cleaning<br>
-                      <a href="https://kasaglowclean.com" style="color: #3b82f6; text-decoration: none;">kasaglowclean.com</a>
+                      <a href="https://${BRAND.domain}" style="color: #3b82f6; text-decoration: none;">${BRAND.domain}</a>
                     </p>
                     <p style="margin: 15px 0 0 0; color: #9ca3af; font-size: 11px;">
                       This is an automated notification from your website contact form.<br>
-                      Sent to: info@kasaglowclean.com
+                      Sent to: ${BRAND.email}
                     </p>
                   </td>
                 </tr>
