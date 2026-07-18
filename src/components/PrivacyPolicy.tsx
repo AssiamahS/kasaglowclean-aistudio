@@ -1,3 +1,4 @@
+import BRAND from '../brand';
 import React from 'react';
 
 const PrivacyPolicy: React.FC = () => {
@@ -12,7 +13,7 @@ const PrivacyPolicy: React.FC = () => {
             <section>
               <h2 className="text-2xl font-bold text-gray-900 mb-3">1. Introduction</h2>
               <p>
-                KasaGlow Cleaning Services ("we," "our," or "us") is committed to protecting your privacy.
+                {BRAND.name} ("we," "our," or "us") is committed to protecting your privacy.
                 This Privacy Policy explains how we collect, use, disclose, and safeguard your information
                 when you visit our website or use our services.
               </p>
@@ -88,8 +89,8 @@ const PrivacyPolicy: React.FC = () => {
                 If you have questions about this Privacy Policy or our data practices, please contact us:
               </p>
               <div className="mt-3 space-y-1">
-                <p><strong>Email:</strong> info@kasaglowclean.com</p>
-                <p><strong>Phone:</strong> (908) 417-5388</p>
+                <p><strong>Email:</strong> {BRAND.email}</p>
+                <p><strong>Phone:</strong> {BRAND.phone}</p>
               </div>
             </section>
 

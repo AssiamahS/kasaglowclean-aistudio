@@ -1,3 +1,4 @@
+import BRAND from '../brand';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -21,7 +22,7 @@ const Hero: React.FC = () => {
             Professional House Cleaning You Can Trust
           </h1>
           <p className="mt-4 text-lg md:text-xl text-gray-200">
-            Reclaim your time and enjoy a sparkling clean home with KasaGlow. Your satisfaction is guaranteed.
+            Reclaim your time and enjoy a sparkling clean home with {BRAND.shortName}. Your satisfaction is guaranteed.
           </p>
           <Link
             to="/contact"

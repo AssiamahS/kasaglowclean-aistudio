@@ -1,7 +1,7 @@
 {
   "name": "kasaglowclean-booking-service-v4",
   "private": true,
-  "version": "0.0.3",
+  "version": "0.0.4",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -18,7 +18,7 @@
     "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.9.5",
-    "stripe": "^20.0.3"
+    "stripe": "^20.0.4"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20251228.0",
