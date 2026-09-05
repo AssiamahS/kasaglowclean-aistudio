@@ -48,6 +48,7 @@ const CalendarBooking: React.FC<CalendarBookingProps> = ({ service, onDateTimeSe
 
     for (let hour = BUSINESS_HOURS.start; hour < BUSINESS_HOURS.end; hour++) {
         for (let minute = 0; minute < 60; minute += 30) {
+            // Create slot in client's local time (not UTC)
             const slotStart = new Date(selectedDate);
             slotStart.setHours(hour, minute, 0, 0);
 
@@ -57,7 +58,11 @@ const CalendarBooking: React.FC<CalendarBookingProps> = ({ service, onDateTimeSe
                 continue;
             }
 
-            const isBooked = MOCKED_BOOKED_SLOTS.has(`${slotStart.toISOString().slice(0, 10)}-${String(hour).padStart(2, '0')}`);
+            // Format date for booked slots check using local date (not ISO UTC)
+            const dateStr = slotStart.getFullYear() + '-' + 
+                           String(slotStart.getMonth() + 1).padStart(2, '0') + '-' + 
+                           String(slotStart.getDate()).padStart(2, '0');
+            const isBooked = MOCKED_BOOKED_SLOTS.has(`${dateStr}-${String(hour).padStart(2, '0')}`);
             const isPast = slotStart < new Date();
 
             if (!isPast) {
@@ -99,11 +104,11 @@ const CalendarBooking: React.FC<CalendarBookingProps> = ({ service, onDateTimeSe
            
            <div>
               <div className="flex justify-between items-center mb-4">
-                <button onClick={handlePrevMonth} className="p-2 rounded-full hover:bg-base-200 transition">
+                <button onClick={handlePrevMonth} style={{ touchAction: 'manipulation' }} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-base-200 transition">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
                 </button>
                 <h4 className="font-semibold text-lg text-center">{currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</h4>
-                <button onClick={handleNextMonth} className="p-2 rounded-full hover:bg-base-200 transition">
+                <button onClick={handleNextMonth} style={{ touchAction: 'manipulation' }} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-base-200 transition">
                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                 </button>
               </div>
@@ -120,7 +125,8 @@ const CalendarBooking: React.FC<CalendarBookingProps> = ({ service, onDateTimeSe
                       <button
                         onClick={() => handleDateClick(dayNumber)}
                         disabled={isPast}
-                        className={`w-8 h-8 rounded-full transition-colors ${isPast ? 'text-gray-300 cursor-not-allowed' : 'hover:bg-primary hover:text-white'} ${isSelected ? 'bg-primary text-white' : ''} ${isToday(dayNumber) && !isSelected ? 'text-primary font-bold border border-primary' : ''}`}
+                        style={{ touchAction: 'manipulation' }}
+                        className={`w-10 h-10 rounded-full transition-colors text-sm ${isPast ? 'text-gray-300 cursor-not-allowed' : 'hover:bg-primary hover:text-white'} ${isSelected ? 'bg-primary text-white' : ''} ${isToday(dayNumber) && !isSelected ? 'text-primary font-bold border border-primary' : ''}`}
                       >
                         {dayNumber}
                       </button>
@@ -142,7 +148,7 @@ const CalendarBooking: React.FC<CalendarBookingProps> = ({ service, onDateTimeSe
                     <p>Please select a date from the calendar.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 max-h-80 overflow-y-auto pr-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 max-h-80 overflow-y-auto pr-2" style={{ WebkitOverflowScrolling: 'touch' }}>
                 {timeSlots.map(({ time, isBooked }) => {
                     const isSelected = selectedTime?.getTime() === time.getTime();
                     return (
@@ -150,6 +156,7 @@ const CalendarBooking: React.FC<CalendarBookingProps> = ({ service, onDateTimeSe
                             key={time.toISOString()}
                             onClick={() => setSelectedTime(time)}
                             disabled={isBooked}
+                            style={{ touchAction: 'manipulation', minHeight: '44px' }}
                             className={`p-2 sm:p-3 rounded-lg text-sm font-semibold transition-all duration-200 w-full ${
                                 isBooked ? 'bg-base-200 text-gray-400 cursor-not-allowed line-through' :
                                 isSelected ? 'bg-primary text-white ring-2 ring-primary-focus' :

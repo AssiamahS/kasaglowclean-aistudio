@@ -60,6 +60,9 @@ interface Appointment {
   end: Date;
   clientId?: string;
   clientName?: string;
+  googleEventId?: string;
+  source?: 'local' | 'google';
+  isGoogleOnly?: boolean;
 }
 
 const DnDCalendar = withDragAndDrop(Calendar);
@@ -168,6 +171,7 @@ export default function AdminView() {
   const [allApplicants, setAllApplicants] = useState<JobApplicant[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [googleEvents, setGoogleEvents] = useState<Appointment[]>([]);
 
   // -----------------------------
   // UI STATE
@@ -218,6 +222,15 @@ export default function AdminView() {
     description: '',
   });
 
+  // Calendar view tracking — sync with isMobile so rotating or resizing works
+  const [calendarView, setCalendarView] = useState<string>(() => {
+    if (typeof window === 'undefined') return 'week';
+    return window.matchMedia('(max-width: 640px)').matches ? 'day' : 'week';
+  });
+  useEffect(() => {
+    setCalendarView(isMobile ? 'day' : 'week');
+  }, [isMobile]);
+
   // Appointment Modal
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
@@ -234,8 +247,12 @@ export default function AdminView() {
   // HELPERS
   // -----------------------------
   const isJobApplication = useCallback((sub: Submission) => {
+    // Prefer explicit type tag from the submission
+    if ((sub as any).type === 'job_application') return true;
+    if ((sub as any).type === 'contact') return false;
+    // Fallback for old submissions without type: check message + resume
     const msg = (sub.message || '').toLowerCase();
-    return msg.includes('job') || msg.includes('application') || msg.includes('apply');
+    return msg.includes('job') || msg.includes('application') || msg.includes('apply') || !!(sub as any).resume_name;
   }, []);
 
   const submissionClients = useMemo(() => submissions.filter((s) => !isJobApplication(s)), [submissions, isJobApplication]);
@@ -251,7 +268,9 @@ export default function AdminView() {
     try {
       const res = await fetch('/api/submissions');
       const data = await res.json();
-      setSubmissions(Array.isArray(data) ? data : []);
+      // API returns { ok, submissions: [...] }
+      const list = Array.isArray(data) ? data : Array.isArray(data?.submissions) ? data.submissions : [];
+      setSubmissions(list);
     } catch {
       // swallow for UI; you can add toast later
     }
@@ -267,14 +286,9 @@ export default function AdminView() {
     }
   }, []);
 
-  const loadApplicants = useCallback(async () => {
-    try {
-      const res = await fetch('/api/applicants');
-      const data = await res.json();
-      setAllApplicants(Array.isArray(data) ? data : []);
-    } catch {
-      // swallow
-    }
+  // Applicants come from submissions filtered by type - no separate endpoint needed
+  const loadApplicants = useCallback(() => {
+    // no-op: applicants are derived from submissions via isJobApplication filter
   }, []);
 
   const loadJobs = useCallback(async () => {
@@ -296,13 +310,40 @@ export default function AdminView() {
         ? data.map((a: any) => ({
             id: a.id,
             title: a.title || a.service || 'Appointment',
-            start: new Date(a.start || a.startTime || a.dateTime || a.date),
-            end: new Date(a.end || a.endTime || a.dateTimeEnd || a.date),
+            start: new Date(a.start),
+            end: new Date(a.end),
             clientId: a.clientId,
             clientName: a.clientName,
           }))
         : [];
       setAppointments(normalized);
+    } catch {
+      // swallow
+    }
+  }, []);
+
+  const loadGoogleEvents = useCallback(async () => {
+    try {
+      const now = new Date();
+      const start = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
+      const end = new Date(now.getFullYear(), now.getMonth() + 3, 0).toISOString();
+      const res = await fetch(`/api/google-events?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`);
+      const data = await res.json();
+      if (data.ok && Array.isArray(data.events)) {
+        const mapped: Appointment[] = data.events
+          .filter((e: any) => e.isGoogleOnly)
+          .map((e: any) => ({
+            id: e.id,
+            title: e.title || 'Google Calendar',
+            start: new Date(e.start),
+            end: new Date(e.end),
+            source: 'google' as const,
+            isGoogleOnly: true,
+            googleEventId: e.googleEventId,
+          }));
+        setGoogleEvents(mapped);
+        if (data.linked) setIsGoogleLinked(true);
+      }
     } catch {
       // swallow
     }
@@ -315,7 +356,8 @@ export default function AdminView() {
     loadApplicants();
     loadJobs();
     loadAppointments();
-  }, [loggedIn, loadSubmissions, loadClients, loadApplicants, loadJobs, loadAppointments]);
+    loadGoogleEvents();
+  }, [loggedIn, loadSubmissions, loadClients, loadApplicants, loadJobs, loadAppointments, loadGoogleEvents]);
 
   // Sync activePanel with scroll position (for swipe gestures)
   useEffect(() => {
@@ -361,20 +403,32 @@ export default function AdminView() {
   // CALENDAR DnD
   // -----------------------------
   const calendarEvents = useMemo(() => {
-    return appointments.map((appt) => ({
+    const local = appointments.map((appt) => ({
       ...appt,
       start: appt.start,
       end: appt.end,
       title: appt.clientName ? `${appt.title} - ${appt.clientName}` : appt.title,
+      source: 'local' as const,
     }));
-  }, [appointments]);
+    // Google-only events (not already synced locally) shown with a different label
+    const googleOnly = googleEvents.map((evt) => ({
+      ...evt,
+      title: `[G] ${evt.title}`,
+      source: 'google' as const,
+    }));
+    return [...local, ...googleOnly];
+  }, [appointments, googleEvents]);
 
   const handleEventDrop = useCallback(async ({ event, start, end }: any) => {
     try {
       await fetch('/api/appointments', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: event.id, start, end }),
+        body: JSON.stringify({
+          id: event.id,
+          start: new Date(start).toISOString(),
+          end: new Date(end).toISOString(),
+        }),
       });
       loadAppointments();
     } catch {
@@ -566,14 +620,20 @@ export default function AdminView() {
   const saveAppointment = useCallback(async () => {
     const method = editingAppointment ? 'PUT' : 'POST';
 
+    const payload = {
+      ...(editingAppointment ? { id: editingAppointment.id } : {}),
+      clientId: appointmentForm.clientId,
+      clientName: appointmentForm.clientName,
+      service: appointmentForm.service,
+      start: appointmentForm.start,
+      end: appointmentForm.end,
+      notes: appointmentForm.notes,
+    };
+
     await fetch('/api/appointments', {
       method,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(
-        editingAppointment
-          ? { id: editingAppointment.id, ...appointmentForm }
-          : appointmentForm
-      ),
+      body: JSON.stringify(payload),
     });
 
     setShowAppointmentModal(false);
@@ -594,8 +654,23 @@ export default function AdminView() {
     loadAppointments();
   }, [editingAppointment, loadAppointments]);
 
+  // Style Google-only events differently
+  const eventPropGetter = useCallback((event: any) => {
+    if (event.source === 'google') {
+      return {
+        style: {
+          backgroundColor: '#4285F4',
+          borderColor: '#3367D6',
+          opacity: 0.85,
+        },
+      };
+    }
+    return {};
+  }, []);
+
   // Calendar event handlers (must be after CRUD functions)
   const handleSelectEvent = useCallback((event: any) => {
+    if (event.source === 'google') return; // Google-only events are read-only
     openEditAppointment(event);
   }, [openEditAppointment]);
 
@@ -614,62 +689,323 @@ export default function AdminView() {
     );
   }
 
-  return (
-    <section className="min-h-screen py-12 bg-base-200">
-      <div className="container mx-auto px-3 sm:px-6 lg:px-8 max-w-7xl">
-        {/* Header */}
-        <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-4">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Admin Panel</h1>
-              <p className="text-gray-600 text-sm">Swipe between sections on mobile. Everything stays on one page.</p>
+  // Clients panel content
+  const clientsPanel = (
+    <PanelShell
+      title="Clients"
+      right={
+        <button
+          onClick={() => setShowAddCustomer(true)}
+          className="px-3 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary-dark transition-colors"
+        >
+          + Add
+        </button>
+      }
+    >
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="space-y-3">
+          {clients.length === 0 ? (
+            <div className="text-gray-500 text-center py-8">No clients found.</div>
+          ) : (
+            clients.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => setSelectedClient(c)}
+                className={`w-full text-left bg-gray-50 rounded-lg p-3 border hover:bg-gray-100 transition ${
+                  selectedClient?.id === c.id ? 'ring-2 ring-primary' : ''
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <UserIcon className="h-4 w-4 text-gray-400 shrink-0" />
+                      <span className="font-semibold text-gray-900 truncate">{c.name}</span>
+                    </div>
+                    <div className="mt-1 text-sm text-gray-600 flex items-center gap-2">
+                      <MailIcon className="h-4 w-4 text-gray-400 shrink-0" />
+                      <span className="truncate">{c.email}</span>
+                    </div>
+                    {c.phone && (
+                      <div className="mt-1 text-sm text-gray-600 flex items-center gap-2">
+                        <PhoneIcon className="h-4 w-4 text-gray-400 shrink-0" />
+                        {c.phone}
+                      </div>
+                    )}
+                  </div>
+                  <span className={`text-xs px-2 py-1 rounded-full shrink-0 ${
+                    c.tier === 'New' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                  }`}>{c.tier || 'New'}</span>
+                </div>
+              </button>
+            ))
+          )}
+        </div>
+
+        {selectedClient && (
+          <div className="lg:sticky lg:top-24 h-fit">
+            <div className="bg-white rounded-lg border p-4">
+              <div className="flex items-start justify-between gap-2">
+                <h3 className="text-lg font-bold text-gray-900">Details</h3>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setSelectedClient(null)}
+                    className="px-2 py-1 text-sm rounded-md border border-gray-300 hover:bg-gray-50"
+                  >
+                    Clear
+                  </button>
+                  <button
+                    onClick={deleteClient}
+                    disabled={deletingClient}
+                    className="px-2 py-1 text-sm rounded-md border border-red-300 text-red-700 hover:bg-red-50 disabled:opacity-60"
+                  >
+                    {deletingClient ? '...' : 'Delete'}
+                  </button>
+                </div>
+              </div>
+              <div className="mt-3 space-y-2 text-sm text-gray-700">
+                <div><span className="font-semibold">Name:</span> {selectedClient.name}</div>
+                <div className="break-all"><span className="font-semibold">Email:</span> {selectedClient.email}</div>
+                {selectedClient.phone && <div><span className="font-semibold">Phone:</span> {selectedClient.phone}</div>}
+                <div><span className="font-semibold">Tier:</span> {selectedClient.tier || 'New'}</div>
+                {selectedClient.createdAt && (
+                  <div><span className="font-semibold">Added:</span> {new Date(selectedClient.createdAt).toLocaleDateString()}</div>
+                )}
+              </div>
             </div>
+          </div>
+        )}
+      </div>
+    </PanelShell>
+  );
+
+  // Job applicants panel content
+  const applicantsPanel = (
+    <PanelShell title="Job Applicants">
+      <div className="space-y-3">
+        {submissionApplicants.length === 0 ? (
+          <div className="text-gray-500 text-center py-8">No job applications found.</div>
+        ) : (
+          submissionApplicants.map((s) => (
+            <div key={s.id} className="bg-gray-50 rounded-lg p-4 border">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="font-semibold text-gray-900 truncate">{s.name}</div>
+                  <div className="mt-1 text-sm text-gray-600 truncate">{s.email}</div>
+                  {s.phone && <div className="mt-1 text-sm text-gray-600">{s.phone}</div>}
+                  {s.service && <div className="mt-1 text-xs text-primary font-medium">{s.service}</div>}
+                </div>
+                <span className="text-xs text-gray-500 shrink-0">{new Date(s.timestamp).toLocaleDateString()}</span>
+              </div>
+              {s.message && (
+                <div className="mt-3 text-sm text-gray-700 whitespace-pre-wrap break-words">{s.message}</div>
+              )}
+            </div>
+          ))
+        )}
+      </div>
+    </PanelShell>
+  );
+
+  // Jobs panel content
+  const jobsPanel = (
+    <PanelShell
+      title="Jobs"
+      right={
+        <div className="flex gap-2">
+          <button
+            onClick={openNewJob}
+            className="px-3 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary-dark"
+          >
+            + Add
+          </button>
+          <button
+            onClick={loadJobs}
+            className="px-3 py-2 text-sm font-semibold rounded-lg border border-gray-300 hover:bg-gray-50"
+          >
+            Reload
+          </button>
+        </div>
+      }
+    >
+      <div className="space-y-3">
+        {jobs.length === 0 ? (
+          <div className="text-gray-500 text-center py-8">No jobs found.</div>
+        ) : (
+          jobs.map((job) => (
+            <div key={job.id} className="border border-gray-200 rounded-lg p-4 bg-white">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <h3 className="text-base font-semibold text-gray-900">{job.title}</h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {job.location} · {job.type}
+                  </p>
+                </div>
+              </div>
+              {job.description && (
+                <p className="mt-3 text-sm text-gray-700 whitespace-pre-wrap break-words">{job.description}</p>
+              )}
+              <div className="flex gap-2 mt-3">
+                <button
+                  onClick={() => openEditJob(job)}
+                  className="px-3 py-1 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => deleteJob(String(job.id))}
+                  className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded-lg hover:bg-red-200"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </PanelShell>
+  );
+
+  // Calendar panel content
+  const calendarPanel = (
+    <PanelShell
+      title="Calendar"
+      right={
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => { loadAppointments(); loadGoogleEvents(); }}
+            className="px-3 py-2 text-sm font-semibold rounded-lg border border-gray-300 hover:bg-gray-50"
+          >
+            Reload
+          </button>
+
+          {isGoogleLinked ? (
+            <div className="flex items-center gap-1 bg-green-50 border border-green-200 px-2 py-1 rounded-full">
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <span className="text-xs font-semibold text-green-700">Synced</span>
+              <button
+                onClick={() =>
+                  fetch('/api/auth/unlink', { method: 'POST' })
+                    .then(() => setIsGoogleLinked(false))
+                    .catch(() => setIsGoogleLinked(false))
+                }
+                className="text-[10px] text-gray-500 underline ml-1"
+              >
+                Unlink
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => { window.location.href = '/api/auth/start'; }}
+              className="px-3 py-2 bg-white border border-gray-300 rounded-lg text-xs font-semibold hover:bg-gray-50 flex items-center gap-1"
+            >
+              <img
+                src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png"
+                alt="Google"
+                className="w-4 h-4"
+              />
+              <span>Link Google</span>
+            </button>
+          )}
+        </div>
+      }
+    >
+      <div className="rounded-lg border bg-white overflow-hidden">
+        <div style={{ height: isMobile ? 'calc(100dvh - 280px)' : '500px', minHeight: '350px' }}>
+          <div className="h-full w-full overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+            <div className={`h-full ${calendarView === 'day' || calendarView === 'agenda' ? 'w-full' : 'min-w-[800px]'}`}>
+              <DnDCalendar
+                localizer={localizer}
+                events={calendarEvents as any}
+                startAccessor="start"
+                endAccessor="end"
+                onSelectEvent={handleSelectEvent}
+                onSelectSlot={handleSelectSlot}
+                onEventDrop={handleEventDrop}
+                onEventResize={handleEventDrop}
+                eventPropGetter={eventPropGetter as any}
+                selectable
+                resizable
+                draggableAccessor={(event: any) => event.source !== 'google'}
+                defaultView={isMobile ? 'day' : 'week'}
+                view={calendarView as any}
+                onView={(view: string) => setCalendarView(view)}
+                views={isMobile ? ['day', 'agenda'] : ['month', 'week', 'day', 'agenda']}
+                step={30}
+                showMultiDayTimes
+                style={{ height: '100%' }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </PanelShell>
+  );
+
+  // Forms panel content
+  const formsPanel = (
+    <PanelShell title="Forms">
+      <div className="w-full max-w-xl mx-auto">
+        <ClientIntakeForm />
+      </div>
+    </PanelShell>
+  );
+
+  const panels: Record<AdminPanelKey, React.ReactNode> = {
+    clients: clientsPanel,
+    applicants: applicantsPanel,
+    jobs: jobsPanel,
+    calendar: calendarPanel,
+    forms: formsPanel,
+  };
+
+  const PANEL_LABELS: Record<AdminPanelKey, string> = {
+    clients: 'Clients',
+    applicants: 'Applicants',
+    jobs: 'Jobs',
+    calendar: 'Calendar',
+    forms: 'Forms',
+  };
+
+  const panelCounts: Record<AdminPanelKey, number | string> = {
+    clients: clients.length,
+    applicants: submissionApplicants.length,
+    jobs: jobs.length,
+    calendar: appointments.length,
+    forms: '',
+  };
+
+  return (
+    <section className="min-h-screen bg-base-200 overflow-x-hidden">
+      <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-4 pb-6">
+        {/* Header */}
+        <div className="bg-white rounded-lg shadow-md p-3 sm:p-4 mb-3">
+          <div className="flex justify-between items-center gap-2">
+            <h1 className="text-lg sm:text-2xl font-bold text-gray-900">Admin</h1>
             <button
               onClick={handleLogout}
-              className="px-4 py-2 bg-gray-600 text-white font-semibold rounded-lg hover:bg-gray-700 transition-colors"
+              className="px-3 py-1.5 bg-gray-600 text-white text-sm font-semibold rounded-lg hover:bg-gray-700 transition-colors"
             >
               Logout
             </button>
           </div>
 
-          {/* Sticky tab bar (horizontal scroll, mobile-safe) */}
-          <div className="mt-4 -mx-4 sm:mx-0">
-            <div className="flex gap-2 overflow-x-auto whitespace-nowrap px-4 sm:px-0 border-b border-gray-200">
+          {/* Tab bar */}
+          <div className="mt-3 -mx-3 sm:-mx-4">
+            <div className="flex overflow-x-auto no-scrollbar border-b border-gray-200">
               {PANEL_ORDER.map((key) => {
-                const label =
-                  key === 'clients'
-                    ? 'Clients'
-                    : key === 'applicants'
-                    ? 'Job Applicants'
-                    : key === 'jobs'
-                    ? 'Jobs'
-                    : key === 'calendar'
-                    ? 'Calendar'
-                    : 'Forms';
-
-                const count =
-                  key === 'clients'
-                    ? clients.length
-                    : key === 'applicants'
-                    ? submissionApplicants.length
-                    : key === 'jobs'
-                    ? jobs.length
-                    : key === 'calendar'
-                    ? appointments.length
-                    : '';
-
                 const active = activePanel === key;
-
                 return (
                   <button
                     key={key}
-                    onClick={() => scrollToPanel(key)}
-                    className={`px-4 py-3 font-semibold transition-colors border-b-2 ${
-                      active ? 'text-primary border-primary' : 'text-gray-600 border-transparent hover:text-gray-900'
+                    onClick={() => setActivePanel(key)}
+                    className={`flex-1 min-w-0 px-2 py-2.5 text-xs sm:text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${
+                      active ? 'text-primary border-primary' : 'text-gray-500 border-transparent'
                     }`}
                   >
-                    {label}
-                    {count !== '' && <span className="ml-2 text-sm text-gray-500">({count})</span>}
+                    {PANEL_LABELS[key]}
+                    {panelCounts[key] !== '' && (
+                      <span className="ml-1 text-gray-400">({panelCounts[key]})</span>
+                    )}
                   </button>
                 );
               })}
@@ -677,314 +1013,8 @@ export default function AdminView() {
           </div>
         </div>
 
-        {/* HORIZONTAL SLIDER (one-page, swipeable) */}
-        <div
-          ref={sliderRef}
-          className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth rounded-lg"
-          style={{
-            WebkitOverflowScrolling: 'touch',
-            height: 'calc(100dvh - 180px)', // Use dvh for mobile viewport, extra padding for safety
-            minHeight: '500px',
-          }}
-        >
-          {/* CLIENTS */}
-          <div
-            ref={(el) => {
-              panelRefs.current.clients = el;
-            }}
-            className="min-w-full snap-start px-1 overflow-y-auto"
-          >
-            <PanelShell
-              title="Clients"
-              right={
-                <button
-                  onClick={() => setShowAddCustomer(true)}
-                  className="px-4 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary-dark transition-colors"
-                >
-                  + Add Customer
-                </button>
-              }
-            >
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <div className="space-y-3">
-                  {clients.length === 0 ? (
-                    <div className="text-gray-500 text-center py-8">No clients found.</div>
-                  ) : (
-                    clients.map((c) => (
-                      <button
-                        key={c.id}
-                        onClick={() => setSelectedClient(c)}
-                        className={`w-full text-left bg-gray-50 rounded-lg p-4 border hover:bg-gray-100 transition ${
-                          selectedClient?.id === c.id ? 'ring-2 ring-primary' : ''
-                        }`}
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <UserIcon className="h-4 w-4 text-gray-400" />
-                              <span className="font-semibold text-gray-900">{c.name}</span>
-                            </div>
-                            <div className="mt-1 text-sm text-gray-600 flex items-center gap-2">
-                              <MailIcon className="h-4 w-4 text-gray-400" />
-                              {c.email}
-                            </div>
-                            {c.phone && (
-                              <div className="mt-1 text-sm text-gray-600 flex items-center gap-2">
-                                <PhoneIcon className="h-4 w-4 text-gray-400" />
-                                {c.phone}
-                              </div>
-                            )}
-                          </div>
-                          <span className={`text-xs px-2 py-1 rounded-full ${
-                            c.tier === 'New' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
-                          }`}>{c.tier || 'New'}</span>
-                        </div>
-                      </button>
-                    ))
-                  )}
-                </div>
-
-                <div className="lg:sticky lg:top-24 h-fit">
-                  {selectedClient ? (
-                    <div className="bg-white rounded-lg border p-4 sm:p-6">
-                      <div className="flex items-start justify-between gap-3">
-                        <h3 className="text-lg font-bold text-gray-900">Client Details</h3>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => setSelectedClient(null)}
-                            className="px-3 py-1 rounded-md border border-gray-300 hover:bg-gray-50"
-                          >
-                            Clear
-                          </button>
-
-                          <button
-                            onClick={deleteClient}
-                            disabled={deletingClient}
-                            className="px-3 py-1 rounded-md border border-red-300 text-red-700 hover:bg-red-50 disabled:opacity-60"
-                          >
-                            {deletingClient ? 'Deleting…' : 'Delete'}
-                          </button>
-                        </div>
-                      </div>
-                      <div className="mt-3 space-y-2 text-sm text-gray-700">
-                        <div><span className="font-semibold">Name:</span> {selectedClient.name}</div>
-                        <div><span className="font-semibold">Email:</span> {selectedClient.email}</div>
-                        {selectedClient.phone && <div><span className="font-semibold">Phone:</span> {selectedClient.phone}</div>}
-                        <div><span className="font-semibold">Tier:</span> {selectedClient.tier || 'New'}</div>
-                        {selectedClient.createdAt && (
-                          <div><span className="font-semibold">Added:</span> {new Date(selectedClient.createdAt).toLocaleDateString()}</div>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="bg-white rounded-lg border p-6 text-center text-gray-500">
-                      Select a client to view details.
-                    </div>
-                  )}
-                </div>
-              </div>
-            </PanelShell>
-          </div>
-
-          {/* JOB APPLICANTS */}
-          <div
-            ref={(el) => {
-              panelRefs.current.applicants = el;
-            }}
-            className="min-w-full snap-start px-1 overflow-y-auto"
-          >
-            <PanelShell title="Job Applicants">
-              <div className="space-y-3">
-                {submissionApplicants.length === 0 ? (
-                  <div className="text-gray-500 text-center py-8">No job applications found.</div>
-                ) : (
-                  submissionApplicants.map((s) => (
-                    <div key={s.id} className="bg-gray-50 rounded-lg p-4 border">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <div className="font-semibold text-gray-900">{s.name}</div>
-                          <div className="mt-1 text-sm text-gray-600">{s.email}</div>
-                          {s.phone && <div className="mt-1 text-sm text-gray-600">{s.phone}</div>}
-                        </div>
-                        <span className="text-xs text-gray-500">{new Date(s.timestamp).toLocaleDateString()}</span>
-                      </div>
-                      {s.message && (
-                        <div className="mt-3 text-sm text-gray-700 whitespace-pre-wrap">{s.message}</div>
-                      )}
-                    </div>
-                  ))
-                )}
-              </div>
-            </PanelShell>
-          </div>
-
-          {/* JOBS */}
-          <div
-            ref={(el) => {
-              panelRefs.current.jobs = el;
-            }}
-            className="min-w-full snap-start px-1 overflow-y-auto"
-          >
-            <PanelShell
-              title="Jobs"
-              right={
-                <div className="flex gap-2">
-                  <button
-                    onClick={openNewJob}
-                    className="px-4 py-2 bg-primary text-white font-semibold rounded-lg hover:bg-primary-dark"
-                  >
-                    + Add Job
-                  </button>
-                  <button
-                    onClick={loadJobs}
-                    className="px-4 py-2 font-semibold rounded-lg border border-gray-300 hover:bg-gray-50"
-                  >
-                    Reload
-                  </button>
-                </div>
-              }
-            >
-              <div className="space-y-3">
-                {jobs.length === 0 ? (
-                  <div className="text-gray-500 text-center py-8">No jobs found.</div>
-                ) : (
-                  jobs.map((job) => (
-                    <div key={job.id} className="border border-gray-200 rounded-lg p-4 bg-white">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-900">{job.title}</h3>
-                          <p className="text-sm text-gray-600 mt-1">
-                            {job.location} · {job.type}
-                          </p>
-                        </div>
-                      </div>
-                      {job.description && (
-                        <p className="mt-3 text-sm text-gray-700 whitespace-pre-wrap">{job.description}</p>
-                      )}
-                      <div className="flex gap-2 mt-3">
-                        <button
-                          onClick={() => openEditJob(job)}
-                          className="px-3 py-1 border border-gray-300 rounded-lg hover:bg-gray-50"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => deleteJob(String(job.id))}
-                          className="px-3 py-1 bg-red-100 text-red-700 rounded-lg hover:bg-red-200"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </PanelShell>
-          </div>
-
-          {/* CALENDAR */}
-          <div
-            ref={(el) => {
-              panelRefs.current.calendar = el;
-            }}
-            className="min-w-full snap-start px-1 overflow-y-auto"
-          >
-            <PanelShell
-              title="Appointment Calendar"
-              right={
-                <div className="flex flex-wrap items-center gap-2">
-                  <button
-                    onClick={loadAppointments}
-                    className="px-4 py-2 font-semibold rounded-lg border border-gray-300 hover:bg-gray-50"
-                  >
-                    Reload
-                  </button>
-
-                  {isGoogleLinked ? (
-                    <div className="flex items-center gap-2 bg-green-50 border border-green-200 px-3 py-1 rounded-full">
-                      <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                      <span className="text-xs font-semibold text-green-700">
-                        Google Synced
-                      </span>
-                      <button
-                        onClick={() =>
-                          fetch('/api/auth/unlink', { method: 'POST' })
-                            .then(() => setIsGoogleLinked(false))
-                            .catch(() => setIsGoogleLinked(false))
-                        }
-                        className="text-[10px] text-gray-500 underline ml-1"
-                      >
-                        Unlink
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        window.location.href = '/api/auth/start';
-                      }}
-                      className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-xs font-semibold hover:bg-gray-50 flex items-center gap-2"
-                    >
-                      <img
-                        src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png"
-                        alt="Google"
-                        className="w-4 h-4"
-                      />
-                      <span>Continue with Google</span>
-                    </button>
-                  )}
-                </div>
-              }
-            >
-              {/* Calendar containment: keeps DnD usable on mobile */}
-              <div className="rounded-lg border bg-white">
-                <div className="h-[60dvh] min-h-[400px] max-h-[600px]">
-                  <div className="h-full w-full overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
-                    {/* Inner min-width keeps week view usable */}
-                    <div className="min-w-[900px] h-full">
-                      <DnDCalendar
-                        localizer={localizer}
-                        events={calendarEvents as any}
-                        startAccessor="start"
-                        endAccessor="end"
-                        onSelectEvent={handleSelectEvent}
-                        onSelectSlot={handleSelectSlot}
-                        onEventDrop={handleEventDrop}
-                        onEventResize={handleEventDrop}
-                        selectable
-                        resizable
-                        draggableAccessor={() => true}
-                        defaultView={isMobile ? 'day' : 'week'}
-                        views={['month', 'week', 'day', 'agenda']}
-                        step={30}
-                        showMultiDayTimes
-                        style={{ height: '100%' }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <p className="mt-3 text-sm text-gray-600">
-                Mobile tip: scroll horizontally to see the full grid, then drag-and-drop appointments normally.
-              </p>
-            </PanelShell>
-          </div>
-
-          {/* FORMS */}
-          <div
-            ref={(el) => {
-              panelRefs.current.forms = el;
-            }}
-            className="min-w-full snap-start px-1 overflow-y-auto"
-          >
-            <PanelShell title="Forms">
-              {/* Standardized width so it matches other panels */}
-              <div className="w-full max-w-xl mx-auto">
-                <ClientIntakeForm />
-              </div>
-            </PanelShell>
-          </div>
-        </div>
+        {/* Active panel content - one at a time, no horizontal scroll */}
+        <div className="w-full">{panels[activePanel]}</div>
       </div>
 
       {/* Add Customer Modal */}

@@ -6,13 +6,20 @@ import { appointmentEmail, appointmentUpdateEmail } from '../../src/emails/appoi
 
 // Helper: get Google access token from stored refresh token
 async function getGoogleAccessToken(env: any): Promise<string | null> {
+  console.log('[GCAL] Fetching refresh token from DB');
+
   try {
     const row = await env.DB.prepare(
       "SELECT value FROM admin_settings WHERE key = 'google_refresh_token'"
     ).first();
 
     const refreshToken = row?.value;
-    if (!refreshToken) return null;
+    if (!refreshToken) {
+      console.warn('[GCAL] No refresh token found - Google Calendar disabled');
+      return null;
+    }
+
+    console.log('[GCAL] Exchanging refresh token for access token');
 
     const resp = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
@@ -26,14 +33,21 @@ async function getGoogleAccessToken(env: any): Promise<string | null> {
     });
 
     const data = await resp.json();
-    if (!data.access_token) {
-      console.error('No access_token from Google', data);
+
+    if (!resp.ok) {
+      console.error('[GCAL] Token exchange failed', { status: resp.status, error: data });
       return null;
     }
 
+    if (!data.access_token) {
+      console.error('[GCAL] No access_token in response', data);
+      return null;
+    }
+
+    console.log('[GCAL] Access token acquired');
     return data.access_token as string;
   } catch (err) {
-    console.error('getGoogleAccessToken error', err);
+    console.error('[GCAL] getGoogleAccessToken error', err);
     return null;
   }
 }
@@ -48,8 +62,10 @@ export async function onRequestGet({ request, env }: any) {
     let query = `
       SELECT
         a.id,
-        a.client_id,
-        a.date_time,
+        a.client_id AS clientId,
+        a.date_time AS start,
+        a.end_time AS end,
+        a.service AS title,
         a.service,
         a.status,
         a.notes,
@@ -69,7 +85,13 @@ export async function onRequestGet({ request, env }: any) {
 
     const result = await env.DB.prepare(query).bind(...binds).all();
 
-    return new Response(JSON.stringify(result.results ?? []), {
+    // Ensure every appointment has an end time (default: start + 2 hours)
+    const rows = (result.results ?? []).map((r: any) => ({
+      ...r,
+      end: r.end || new Date(new Date(r.start).getTime() + 2 * 60 * 60 * 1000).toISOString(),
+    }));
+
+    return new Response(JSON.stringify(rows), {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err: any) {
@@ -84,12 +106,18 @@ export async function onRequestGet({ request, env }: any) {
 // POST - Create new appointment
 export async function onRequestPost({ request, env }: any) {
   try {
-    const { clientId, dateTime, service, notes } = await request.json();
+    const body = await request.json();
+    const clientId = body.clientId;
+    const dateTime = body.dateTime || body.start;
+    const service = body.service;
+    const notes = body.notes;
+    // Calculate end time: use provided end, or start + 2 hours
+    const endTime = body.end || body.endTime || new Date(new Date(dateTime).getTime() + 2 * 60 * 60 * 1000).toISOString();
 
     const stmt = await env.DB.prepare(`
-      INSERT INTO appointments (client_id, date_time, service, notes, created_at, updated_at)
-      VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))
-    `).bind(clientId, dateTime, service || '', notes || '').run();
+      INSERT INTO appointments (client_id, date_time, end_time, service, notes, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, datetime('now'), datetime('now'))
+    `).bind(clientId, dateTime, endTime, service || '', notes || '').run();
 
     const appointmentId = stmt.meta.last_row_id;
 
@@ -125,8 +153,12 @@ export async function onRequestPost({ request, env }: any) {
 
     // Google Calendar sync: create event
     try {
+      console.log('[GCAL] Starting calendar event creation for appointment', appointmentId);
       const accessToken = await getGoogleAccessToken(env);
-      if (accessToken) {
+
+      if (!accessToken) {
+        console.log('[GCAL] No access token - skipping calendar sync');
+      } else {
         const client = await env.DB.prepare(
           `SELECT email, name FROM clients WHERE id = ?`
         ).bind(clientId).first();
@@ -144,6 +176,12 @@ export async function onRequestPost({ request, env }: any) {
           reminders: { useDefault: true },
         };
 
+        console.log('[GCAL] Creating calendar event', {
+          summary: eventBody.summary,
+          start: startIso,
+          end: endIso,
+        });
+
         const eventResp = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
           method: 'POST',
           headers: {
@@ -154,12 +192,20 @@ export async function onRequestPost({ request, env }: any) {
         });
 
         const eventJson = await eventResp.json();
+
         if (eventResp.ok && eventJson.id) {
+          console.log('[GCAL] Event created successfully', {
+            eventId: eventJson.id,
+            htmlLink: eventJson.htmlLink,
+          });
           await env.DB.prepare(
             `UPDATE appointments SET googleEventId = ? WHERE id = ?`
           ).bind(eventJson.id, appointmentId).run();
         } else {
-          console.error('Google event create failed', eventJson);
+          console.error('[GCAL] Event creation failed', {
+            status: eventResp.status,
+            error: eventJson,
+          });
         }
       }
     } catch (calErr) {
@@ -181,13 +227,24 @@ export async function onRequestPost({ request, env }: any) {
 // PUT - Update appointment
 export async function onRequestPut({ request, env }: any) {
   try {
-    const { id, dateTime, service, status, notes } = await request.json();
+    const body = await request.json();
+    const id = body.id;
+    const dateTime = body.dateTime || body.start;
+    const endTime = body.end || body.endTime || (dateTime ? new Date(new Date(dateTime).getTime() + 2 * 60 * 60 * 1000).toISOString() : null);
+    const service = body.service;
+    const status = body.status;
+    const notes = body.notes;
 
     await env.DB.prepare(`
       UPDATE appointments
-      SET date_time = ?, service = ?, status = ?, notes = ?, updated_at = datetime('now')
+      SET date_time = COALESCE(?, date_time),
+          end_time = COALESCE(?, end_time),
+          service = COALESCE(?, service),
+          status = COALESCE(?, status),
+          notes = COALESCE(?, notes),
+          updated_at = datetime('now')
       WHERE id = ?
-    `).bind(dateTime, service || '', status || 'upcoming', notes || '', id).run();
+    `).bind(dateTime, endTime, service, status, notes, id).run();
 
     // Send update email via Resend
     if (env.RESEND_API_KEY) {
@@ -231,7 +288,7 @@ export async function onRequestPut({ request, env }: any) {
       const accessToken = await getGoogleAccessToken(env);
       if (accessToken) {
         const row = await env.DB.prepare(
-          `SELECT a.googleEventId, a.date_time, a.service, c.name, c.email
+          `SELECT a.googleEventId, a.date_time, a.end_time, a.service, c.name, c.email
            FROM appointments a
            LEFT JOIN clients c ON a.client_id = c.id
            WHERE a.id = ?`
@@ -239,7 +296,9 @@ export async function onRequestPut({ request, env }: any) {
 
         if (row && row.googleEventId) {
           const startIso = new Date(row.date_time || dateTime).toISOString();
-          const endIso = new Date(new Date(row.date_time || dateTime).getTime() + 2 * 60 * 60 * 1000).toISOString();
+          const endIso = row.end_time
+            ? new Date(row.end_time).toISOString()
+            : new Date(new Date(row.date_time || dateTime).getTime() + 2 * 60 * 60 * 1000).toISOString();
 
           const eventBody = {
             summary: `🧹 KasaGlow: ${service || row.service || 'Cleaning Service'}`,

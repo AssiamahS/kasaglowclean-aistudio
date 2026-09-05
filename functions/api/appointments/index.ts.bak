@@ -8,18 +8,18 @@ export async function onRequestGet({ request, env }: any) {
     let query = `
       SELECT
         appointments.*,
-        submissions.name as clientName
+        clients.name as clientName
       FROM appointments
-      LEFT JOIN submissions ON CAST(appointments.clientId AS TEXT) = CAST(submissions.id AS TEXT)
+      LEFT JOIN clients ON appointments.client_id = clients.id
     `;
     const params: string[] = [];
 
     if (start && end) {
-      query += ' WHERE appointments.dateTime >= ? AND appointments.dateTime <= ?';
+      query += ' WHERE appointments.date_time >= ? AND appointments.date_time <= ?';
       params.push(start, end);
     }
 
-    query += ' ORDER BY appointments.dateTime ASC';
+    query += ' ORDER BY appointments.date_time ASC';
 
     const result = await env.DB.prepare(query).bind(...params).all();
 
@@ -53,8 +53,8 @@ export async function onRequestPost({ request, env }: any) {
 
     // Insert appointment
     const result = await env.DB.prepare(
-      `INSERT INTO appointments (clientId, dateTime, service, status, notes)
-       VALUES (?, ?, ?, 'scheduled', ?)`
+      `INSERT INTO appointments (client_id, date_time, service, status, notes, created_at, updated_at)
+       VALUES (?, ?, ?, 'scheduled', ?, datetime('now'), datetime('now'))`
     ).bind(clientId, dateTime, service || 'Cleaning', notes || '').run();
 
     // Send email notification via Resend
@@ -105,7 +105,7 @@ export async function onRequestPut({ request, env }: any) {
 
     await env.DB.prepare(
       `UPDATE appointments
-       SET dateTime = ?, service = ?, status = ?, notes = ?
+       SET date_time = ?, service = ?, status = ?, notes = ?, updated_at = datetime('now')
        WHERE id = ?`
     ).bind(dateTime, service, status || 'scheduled', notes || '', id).run();
 

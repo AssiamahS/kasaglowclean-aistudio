@@ -100,6 +100,7 @@ const EmploymentTab: React.FC = () => {
         message: formState.message,
         resumeName: resumeFile?.name,
         resumeData: resumeDataUrl,
+        type: 'job_application',
         timestamp: new Date().toISOString()
       };
 

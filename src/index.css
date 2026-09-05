@@ -1,3 +1,51 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Prevent iOS font size inflation */
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* react-big-calendar — mobile overrides */
+@media (max-width: 640px) {
+  .rbc-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px;
+  }
+  .rbc-toolbar-label {
+    font-size: 15px;
+    font-weight: 700;
+    order: -1;
+  }
+  .rbc-btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .rbc-btn-group button,
+  .rbc-toolbar button {
+    min-height: 40px;
+    min-width: 40px;
+    font-size: 13px;
+    padding: 6px 10px;
+    touch-action: manipulation;
+  }
+  .rbc-event {
+    font-size: 11px;
+    padding: 2px 4px;
+  }
+  .rbc-time-slot {
+    min-height: 30px;
+  }
+  .rbc-label {
+    font-size: 11px;
+    padding: 0 4px;
+  }
+}

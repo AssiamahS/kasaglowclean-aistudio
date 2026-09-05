@@ -10,7 +10,7 @@ interface Env {
 export async function onRequestPost(context: { request: Request; env: Env }) {
   try {
     const data = await context.request.json();
-    const { name, email, phone, service, message, resumeName, resumeData, timestamp } = data;
+    const { name, email, phone, service, message, resumeName, resumeData, timestamp, type } = data;
 
     if (!name || !email || !service) {
       return new Response(JSON.stringify({ ok: false, error: 'name, email and service are required' }), {
@@ -20,6 +20,7 @@ export async function onRequestPost(context: { request: Request; env: Env }) {
     }
 
     const ts = timestamp || new Date().toISOString();
+    const submissionType = type || 'contact';
 
     // If an R2 bucket is configured, upload resume there and store the key in resume_url
     let resume_url: string | null = null;
@@ -40,8 +41,8 @@ export async function onRequestPost(context: { request: Request; env: Env }) {
       }
     }
 
-    await context.env.DB.prepare(`INSERT INTO submissions (name, email, phone, service, message, resume_name, resume_data, resume_url, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-      .bind(name, email, phone || null, service, message || '', resumeName || null, resumeData || null, resume_url, ts)
+    await context.env.DB.prepare(`INSERT INTO submissions (name, email, phone, service, message, resume_name, resume_data, resume_url, timestamp, type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+      .bind(name, email, phone || null, service, message || '', resumeName || null, resumeData || null, resume_url, ts, submissionType)
       .run();
 
     return new Response(JSON.stringify({ ok: true, message: 'Submission saved' }), {

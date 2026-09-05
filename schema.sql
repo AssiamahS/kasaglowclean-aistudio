@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS submissions (
   resume_url TEXT,
   timestamp TEXT NOT NULL,
   read INTEGER DEFAULT 0,
+  type TEXT DEFAULT 'contact',
   created_at TEXT DEFAULT (datetime('now'))
 );
 
@@ -57,11 +58,13 @@ CREATE TABLE IF NOT EXISTS appointments (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   client_id INTEGER NOT NULL,
   date_time TEXT NOT NULL,
+  end_time TEXT,
   service TEXT,
   status TEXT DEFAULT 'scheduled',
   notes TEXT,
   googleEventId TEXT,
   created_at TEXT DEFAULT (datetime('now')),
+  updated_at TEXT DEFAULT (datetime('now')),
   FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE CASCADE
 );
 
