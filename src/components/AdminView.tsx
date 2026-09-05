@@ -6,6 +6,7 @@ import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { enUS } from 'date-fns/locale';
 import ClientIntakeForm from './ClientIntakeForm';
+import MobileSchedule from './MobileSchedule';
 
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
@@ -56,6 +57,7 @@ interface Job {
 interface Appointment {
   id: string;
   title: string;
+  service?: string;
   start: Date;
   end: Date;
   clientId?: string;
@@ -294,18 +296,33 @@ export default function AdminView() {
       const res = await fetch('/api/appointments');
       const data = await res.json();
       const normalized: Appointment[] = Array.isArray(data)
-        ? data.map((a: any) => ({
-            id: a.id,
-            title: a.title || a.service || 'Appointment',
-            start: new Date(a.start || a.startTime || a.dateTime || a.date),
-            end: new Date(a.end || a.endTime || a.dateTimeEnd || a.date),
-            clientId: a.clientId,
-            clientName: a.clientName,
-          }))
+        ? data
+            .map((a: any) => {
+              // API returns D1 rows with snake_case keys — date_time, client_id.
+              // Fall back to camelCase variants for forward compatibility.
+              const startRaw = a.date_time || a.dateTime || a.start || a.startTime || a.date;
+              if (!startRaw) return null;
+              const start = new Date(startRaw);
+              if (Number.isNaN(start.getTime())) return null;
+              const endRaw = a.end_time || a.end || a.endTime;
+              const end = endRaw
+                ? new Date(endRaw)
+                : new Date(start.getTime() + 2 * 60 * 60 * 1000); // default 2h
+              return {
+                id: a.id,
+                title: a.title || a.service || 'Appointment',
+                service: a.service,
+                start,
+                end,
+                clientId: a.client_id || a.clientId,
+                clientName: a.clientName,
+              } as Appointment;
+            })
+            .filter((a): a is Appointment => a !== null)
         : [];
       setAppointments(normalized);
-    } catch {
-      // swallow
+    } catch (err) {
+      console.error('loadAppointments failed', err);
     }
   }, []);
 
@@ -956,38 +973,43 @@ export default function AdminView() {
                 </div>
               }
             >
-              {/* Calendar containment: on mobile the agenda/day view flows at screen width
-                  (no horizontal overflow); on md+ we give month/week a 900px inner canvas. */}
-              <div className="rounded-lg border bg-white">
-                <div className="h-[70dvh] min-h-[400px] md:h-[60dvh] md:max-h-[600px]">
-                  <div className="h-full w-full overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
-                    <div className="h-full md:min-w-[900px]">
-                      <DnDCalendar
-                        localizer={localizer}
-                        events={calendarEvents as any}
-                        startAccessor="start"
-                        endAccessor="end"
-                        onSelectEvent={handleSelectEvent}
-                        onSelectSlot={handleSelectSlot}
-                        onEventDrop={handleEventDrop}
-                        onEventResize={handleEventDrop}
-                        selectable
-                        resizable
-                        draggableAccessor={() => true}
-                        defaultView={isMobile ? 'agenda' : 'week'}
-                        views={isMobile ? ['agenda', 'day'] : ['month', 'week', 'day', 'agenda']}
-                        step={30}
-                        showMultiDayTimes
-                        style={{ height: '100%' }}
-                      />
+              {/* Mobile: Google-Calendar-style Schedule list.
+                  Desktop: full react-big-calendar with drag-and-drop. */}
+              {isMobile ? (
+                <div className="rounded-lg border bg-white overflow-hidden max-h-[75dvh] overflow-y-auto">
+                  <MobileSchedule
+                    events={calendarEvents as any}
+                    onSelectEvent={(ev) => handleSelectEvent(ev as any)}
+                  />
+                </div>
+              ) : (
+                <div className="rounded-lg border bg-white">
+                  <div className="h-[60dvh] max-h-[600px]">
+                    <div className="h-full w-full overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+                      <div className="h-full min-w-[900px]">
+                        <DnDCalendar
+                          localizer={localizer}
+                          events={calendarEvents as any}
+                          startAccessor="start"
+                          endAccessor="end"
+                          onSelectEvent={handleSelectEvent}
+                          onSelectSlot={handleSelectSlot}
+                          onEventDrop={handleEventDrop}
+                          onEventResize={handleEventDrop}
+                          selectable
+                          resizable
+                          draggableAccessor={() => true}
+                          defaultView="week"
+                          views={['month', 'week', 'day', 'agenda']}
+                          step={30}
+                          showMultiDayTimes
+                          style={{ height: '100%' }}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-
-              <p className="mt-3 text-sm text-gray-600 md:hidden">
-                Agenda view fits the screen; tap Day for a timed view.
-              </p>
+              )}
             </PanelShell>
           </div>
 
