@@ -11,8 +11,8 @@ database_id = "4b729739-978c-41ac-af74-7ad8df3b943d"
 
 [vars]
 SITE_URL = "https://kasaglowclean.com"
-# Flip to "live" once real PayPal credentials are set as secrets.
-PAYPAL_ENV = "sandbox"
+# "live" = api-m.paypal.com, anything else = sandbox. Live app credentials only.
+PAYPAL_ENV = "live"
 # Booking deposit in cents ($35 default).
 DEPOSIT_CENTS = "3500"
 
@@ -23,5 +23,5 @@ DEPOSIT_CENTS = "3500"
 #   RESEND_API_KEY     (ROTATE — the previous key was committed publicly)
 #   STRIPE_SECRET_KEY  (sk_live_...)
 #   PAYPAL_CLIENT_ID / PAYPAL_SECRET  (live app credentials)
-# Build-time var for the frontend PayPal button:
-#   VITE_PAYPAL_CLIENT_ID  (plain env var, not secret)
+# The PayPal button gets its client id from /payments/config at runtime;
+# VITE_PAYPAL_CLIENT_ID is only a fallback and no longer required.

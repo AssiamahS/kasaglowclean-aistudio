@@ -58,6 +58,12 @@ export function stripeKey(env: any): { key?: string; problem?: string } {
   return { key: raw };
 }
 
+// PayPal's live API host is api-m.paypal.com — there is no "live" subdomain,
+// so interpolating PAYPAL_ENV into the hostname only ever worked for sandbox.
+export function paypalApi(env: any): string {
+  return env.PAYPAL_ENV === 'live' ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com';
+}
+
 export function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
     status,

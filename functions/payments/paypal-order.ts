@@ -1,5 +1,5 @@
 import type { PagesFunction } from '@cloudflare/workers-types';
-import { depositCents, json, toId } from './_lib';
+import { depositCents, json, paypalApi, toId } from './_lib';
 
 export const onRequestPost: PagesFunction = async ({ request, env }: any) => {
   if (!env.PAYPAL_CLIENT_ID || !env.PAYPAL_SECRET) {
@@ -12,7 +12,7 @@ export const onRequestPost: PagesFunction = async ({ request, env }: any) => {
   const amount = (depositCents(env) / 100).toFixed(2);
 
   const auth = btoa(`${env.PAYPAL_CLIENT_ID}:${env.PAYPAL_SECRET}`);
-  const response = await fetch(`https://api-m.${env.PAYPAL_ENV}.paypal.com/v2/checkout/orders`, {
+  const response = await fetch(`${paypalApi(env)}/v2/checkout/orders`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

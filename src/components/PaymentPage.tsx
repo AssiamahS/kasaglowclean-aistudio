@@ -9,6 +9,9 @@ const PaymentPage: React.FC = () => {
   const appointmentId = params.get("appointmentId");
   const [depositCents, setDepositCents] = useState(3500);
   const [error, setError] = useState<string | null>(null);
+  const [paypalClientId, setPaypalClientId] = useState<string | null>(
+    import.meta.env.VITE_PAYPAL_CLIENT_ID || null
+  );
 
   const ids = { clientId, appointmentId };
   const deposit = `$${(depositCents / 100).toFixed(2).replace(/\.00$/, "")}`;
@@ -16,17 +19,17 @@ const PaymentPage: React.FC = () => {
   useEffect(() => {
     fetch("/payments/config")
       .then((r) => r.json())
-      .then((d) => d?.depositCents && setDepositCents(d.depositCents))
+      .then((d) => {
+        if (d?.depositCents) setDepositCents(d.depositCents);
+        if (d?.paypalClientId) setPaypalClientId(d.paypalClientId);
+      })
       .catch(() => {});
   }, []);
 
   // PAYPAL BUTTON
   useEffect(() => {
-    const clientIdKey = import.meta.env.VITE_PAYPAL_CLIENT_ID;
-    if (!clientIdKey) {
-      console.error("Missing VITE_PAYPAL_CLIENT_ID");
-      return;
-    }
+    const clientIdKey = paypalClientId;
+    if (!clientIdKey) return;
 
     const container = document.getElementById("paypal-button");
     if (!container) return;
@@ -67,7 +70,7 @@ const PaymentPage: React.FC = () => {
       console.error("Failed to load PayPal SDK:", error);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [paypalClientId]);
 
   // STRIPE (card) BUTTON
   const handleStripe = async () => {

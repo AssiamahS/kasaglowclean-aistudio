@@ -1,4 +1,4 @@
-import { json, recordPayment, toId } from './_lib';
+import { json, paypalApi, recordPayment, toId } from './_lib';
 
 export async function onRequestPost({ request, env }: any) {
   const url = new URL(request.url);
@@ -10,7 +10,7 @@ export async function onRequestPost({ request, env }: any) {
 
   const auth = btoa(`${env.PAYPAL_CLIENT_ID}:${env.PAYPAL_SECRET}`);
   const response = await fetch(
-    `https://api-m.${env.PAYPAL_ENV}.paypal.com/v2/checkout/orders/${orderID}/capture`,
+    `${paypalApi(env)}/v2/checkout/orders/${orderID}/capture`,
     {
       method: 'POST',
       headers: {
