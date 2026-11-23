@@ -45,6 +45,19 @@ export async function recordPayment(db: any, p: {
   }
 }
 
+// The key was saved in the Pages dashboard under the name "Stripe", not
+// STRIPE_SECRET_KEY, so checkout 503'd with a key sitting right there.
+// Accept both names. Only a secret/restricted key can create sessions —
+// a pk_ pasted by mistake is reported as such instead of a vague 401.
+export function stripeKey(env: any): { key?: string; problem?: string } {
+  const raw = String(env.STRIPE_SECRET_KEY || env.Stripe || env.STRIPE || '').trim();
+  if (!raw) return { problem: 'missing' };
+  if (!/^(sk|rk)_(live|test)_/.test(raw)) {
+    return { problem: raw.startsWith('pk_') ? 'publishable key set, secret key needed' : 'not a stripe secret key' };
+  }
+  return { key: raw };
+}
+
 export function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
     status,

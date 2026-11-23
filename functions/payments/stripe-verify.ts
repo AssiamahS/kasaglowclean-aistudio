@@ -1,16 +1,17 @@
 import Stripe from 'stripe';
 import type { PagesFunction } from '@cloudflare/workers-types';
-import { json, recordPayment, toId } from './_lib';
+import { json, recordPayment, stripeKey, toId } from './_lib';
 
 // Called by the /payment-success page. Verifies the checkout session with
 // Stripe server-side (no webhook needed) and records the payment in D1.
 export const onRequestGet: PagesFunction = async ({ request, env }: any) => {
-  if (!env.STRIPE_SECRET_KEY) return json({ error: 'Stripe not configured' }, 503);
+  const { key, problem } = stripeKey(env);
+  if (!key) return json({ error: 'Stripe not configured', reason: problem }, 503);
 
   const sessionId = new URL(request.url).searchParams.get('session_id');
   if (!sessionId) return json({ error: 'Missing session_id' }, 400);
 
-  const stripe = new Stripe(env.STRIPE_SECRET_KEY, {
+  const stripe = new Stripe(key, {
     httpClient: Stripe.createFetchHttpClient(),
   });
 
